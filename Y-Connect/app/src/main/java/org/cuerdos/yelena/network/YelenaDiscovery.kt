@@ -47,9 +47,8 @@ object YelenaDiscovery {
 
         thread(isDaemon = true, name = "Yelena-Recv") {
             try {
-                // CRÍTICO: crear sin bind, setear reuseAddress, LUEGO bind
                 recvSocket = DatagramSocket(null).also { sock ->
-                    sock.reuseAddress = true  // ANTES del bind
+                    sock.reuseAddress = true
                     sock.broadcast    = true
                     sock.bind(InetSocketAddress(UDP_PORT))
                     sock.soTimeout    = 2000
@@ -69,7 +68,6 @@ object YelenaDiscovery {
                         if (src == myIp) continue
                         handlePacket(src, raw)
                     } catch (_: java.net.SocketTimeoutException) {
-                        // timeout normal, seguir esperando
                     }
                 }
             } catch (e: Exception) {
@@ -107,11 +105,11 @@ object YelenaDiscovery {
             put("port",    8766)
             put("os",      "Android ${android.os.Build.VERSION.RELEASE}")
             put("version", "1")
+            put("role",    "android")
         }.toString().toByteArray(Charsets.UTF_8)
 
         try {
             val bcast = getBroadcastAddr()
-            // Enviar a broadcast de subred Y a 255.255.255.255
             listOf(bcast, "255.255.255.255").forEach { addr ->
                 val dest = InetAddress.getByName(addr)
                 sendSocket?.send(DatagramPacket(payload, payload.size, dest, UDP_PORT))
@@ -127,7 +125,6 @@ object YelenaDiscovery {
             val j  = JSONObject(raw)
             if (j.optString("type") != "yelena") return
             val os = j.optString("os", "")
-            // Ignorar paquetes de otros Android
             if (os.contains("Android", ignoreCase = true)) return
 
             val name  = j.optString("name", src)
@@ -148,7 +145,7 @@ object YelenaDiscovery {
                 iface.inetAddresses?.toList()?.forEach { addr ->
                     if (!addr.isLoopbackAddress && addr is java.net.Inet4Address) {
                         val ip = addr.hostAddress ?: return@forEach
-                        if (!ip.startsWith("169.254")) return ip  // ignorar APIPA
+                        if (!ip.startsWith("169.254")) return ip
                     }
                 }
             }
