@@ -1,6 +1,3 @@
-"""
-tray.py — Y-Connect v2.0
-"""
 import os, sys, json, time, hashlib, threading, subprocess, tempfile, asyncio
 import zipfile, io, re, logging, fnmatch, weakref
 from pathlib import Path
@@ -24,7 +21,6 @@ from PySide6.QtCore import Qt, QTimer, Signal, QObject, QSize, QElapsedTimer
 
 from engine import manager
 
-# ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(name)s] %(levelname)s: %(message)s",
@@ -32,7 +28,6 @@ logging.basicConfig(
 )
 log = logging.getLogger("yconnect")
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
 BASE_DIR    = Path(__file__).parent
 ASSETS_DIR  = BASE_DIR / "assets"
 LOGO_PATH   = ASSETS_DIR / "logo.svg"
@@ -43,7 +38,6 @@ PREFS_FILE  = CONFIG_DIR / "prefs.json"
 TRANSFER_DIR= CONFIG_DIR / "transfers"
 TRANSFER_DIR.mkdir(exist_ok=True)
 
-# ── Signals ───────────────────────────────────────────────────────────────────
 class _Sig(QObject):
     connected         = Signal(dict)
     disconnected      = Signal(str)
@@ -63,7 +57,6 @@ class _Sig(QObject):
     wifi_disconnected = Signal(str)
 SIG = _Sig()
 
-# ── i18n ──────────────────────────────────────────────────────────────────────
 STRINGS = {
 "es": {
     "title":"Y-Connect","connected":"Conectado","disconnected":"Desconectado",
@@ -159,7 +152,6 @@ def _detect_lang():
             if c in STRINGS: return c
     return "en"
 
-# ── Palette ───────────────────────────────────────────────────────────────────
 BG      = QColor("#242424")
 BG_SIDE = QColor("#1e1e1e")
 BG_CARD = QColor("#2e2e2e")
@@ -197,7 +189,6 @@ def _apply_palette(app):
     p.setColor(QPalette.Disabled, QPalette.ButtonText, DIS)
     app.setPalette(p)
 
-# ── Icon helpers ──────────────────────────────────────────────────────────────
 def _themed_icon(icon_name, size=QSize(24, 24), color=None):
     if color is None:
         color = FG
@@ -226,7 +217,6 @@ def _themed_icon(icon_name, size=QSize(24, 24), color=None):
 def _themed_pixmap(icon_name, size=QSize(24, 24), color=None):
     return _themed_icon(icon_name, size, color).pixmap(size)
 
-# ── Widget helpers ────────────────────────────────────────────────────────────
 def _lbl(text="", size=13, bold=False, dim=False, wrap=False, accent=False, warn=False, err=False):
     l = QLabel(text)
     f = l.font(); f.setPointSize(size)
@@ -263,15 +253,7 @@ def _scrolled(widget):
     return s
 
 def _icon_for_signal(connected, rssi):
-    """
-    Usa SVGs propios de assets/:
-      stat0.svg → sin conexión / conexión perdida
-      stat1.svg → señal débil     (< -80 dBm)
-      stat2.svg → señal regular   (-80 a -70 dBm)
-      stat3.svg → señal buena     (-70 a -60 dBm)
-      stat4.svg → señal excelente (>= -60 dBm)
-    Fallback a iconos del sistema si el SVG no existe.
-    """
+
     _FALLBACKS = {
         "stat0": ("network-cellular-offline-symbolic",    FG_DIM),
         "stat1": ("network-cellular-signal-weak-symbolic", FG),
@@ -320,7 +302,6 @@ def _priority_dot(priority_level):
     dot.setStyleSheet(f"background-color: {color.name()}; border-radius: 5px;")
     return dot
 
-# ── Device Memory ─────────────────────────────────────────────────────────────
 class DeviceMemory:
     def __init__(self):
         self._db: Dict[str, dict] = {}
@@ -405,7 +386,6 @@ class DeviceMemory:
     def all_devices(self) -> Dict[str, dict]:
         return dict(self._db)
 
-# ── Smart Reconnector ─────────────────────────────────────────────────────────
 class SmartReconnector:
     BASE_DELAY    = 1.5
     MAX_DELAY     = 60.0
@@ -472,7 +452,6 @@ class SmartReconnector:
             log.warning("Reconnect attempt %d failed: %s", self._attempt, e)
         self._schedule_next()
 
-# ── Network Monitor ───────────────────────────────────────────────────────────
 class NetworkMonitor:
     HISTORY_SIZE = 10
     def __init__(self):
@@ -506,7 +485,6 @@ class NetworkMonitor:
                      "fair": 8000, "poor": 12000, "unknown": 6000}
         return intervals.get(self._quality, 6000)
 
-# ── Context Engine ────────────────────────────────────────────────────────────
 class ContextEngine:
     def __init__(self, device_memory: DeviceMemory):
         self._dm = device_memory
@@ -564,7 +542,6 @@ class ContextEngine:
                          "text": "Mute phone (night mode)", "action": "mute_phone"})
         return sugs[:5]
 
-# ── Notification AI ───────────────────────────────────────────────────────────
 class NotificationAI:
     PRIORITY_APP = {
         "whatsapp": 3, "telegram": 3, "signal": 3, "sms": 4, "phone": 5,
@@ -626,7 +603,6 @@ class NotificationAI:
             result = grouped
         return result
 
-# ── Transfer Manager ──────────────────────────────────────────────────────────
 class TransferManager:
     MAX_SIZE = 100 * 1024 * 1024
     COMPRESS_THRESHOLD = 256 * 1024
@@ -706,7 +682,6 @@ class TransferManager:
     @property
     def active_transfers(self) -> Dict[str, dict]: return dict(self._active)
 
-# ── Clipboard Sync ────────────────────────────────────────────────────────────
 class ClipboardSync:
     def __init__(self):
         self._app: Optional[QApplication] = None
@@ -758,7 +733,6 @@ class ClipboardSync:
                 self._debounce.timeout.connect(lambda: self.send_clipboard(text))
                 if not self._debounce.isActive(): self._debounce.start()
 
-# ── Preferences ───────────────────────────────────────────────────────────────
 class Preferences:
     DEFAULTS = {
         "auto_reconnect": True, "clipboard_auto": False,
@@ -785,7 +759,6 @@ class Preferences:
 
     def set(self, key, value): self._data[key] = value; self._save()
 
-# ── Toast Widget ──────────────────────────────────────────────────────────────
 class ToastWidget(QFrame):
     def __init__(self, title: str, body: str, duration_ms=3500):
         super().__init__()
@@ -823,7 +796,6 @@ class ToastWidget(QFrame):
         else:
             self.setWindowOpacity(self._opacity)
 
-# ── Command Palette ───────────────────────────────────────────────────────────
 class CommandPalette(QFrame):
     action_triggered = Signal(str)
     COMMANDS = [
@@ -883,7 +855,6 @@ class CommandPalette(QFrame):
             self.move(geo.center().x() - self.width()//2, geo.top() + 60)
         self.show(); self._search.setFocus()
 
-# ── Connect Tab ───────────────────────────────────────────────────────────────
 class ConnectTab(QWidget):
     def __init__(self, tr, device_memory: DeviceMemory):
         super().__init__()
@@ -939,7 +910,6 @@ class ConnectTab(QWidget):
             p = self._qr.palette(); p.setColor(QPalette.Window, BG_CARD)
             self._qr.setPalette(p)
 
-# ── Status Tab ────────────────────────────────────────────────────────────────
 class StatusTab(QWidget):
     def __init__(self, tr, prefs: Preferences):
         super().__init__()
@@ -1034,7 +1004,6 @@ class StatusTab(QWidget):
                     self._bat_val, self._net_lbl, self._reconn_lbl): lbl.setText("--")
         self._sig.setText("")
 
-# ── Media Tab ─────────────────────────────────────────────────────────────────
 class MediaTab(QWidget):
     def __init__(self, tr):
         super().__init__()
@@ -1083,7 +1052,6 @@ class MediaTab(QWidget):
         for b in (self._prev,self._play,self._next,self._vdown,self._vup,
                   self._pp,self._ppl,self._pn): b.setEnabled(on)
 
-# ── Notifications Tab ─────────────────────────────────────────────────────────
 class NotifsTab(QWidget):
     def __init__(self, tr, notif_ai: NotificationAI):
         super().__init__()
@@ -1157,7 +1125,6 @@ class NotifsTab(QWidget):
             self._lay.addWidget(item)
             if n.get("app"): self._ai._last_notif_app = n["app"]
 
-# ── Files Tab ─────────────────────────────────────────────────────────────────
 class FilesTab(QWidget):
     def __init__(self, tr, transfer_mgr: TransferManager, prefs: Preferences,
                  context_engine: ContextEngine, net_monitor: NetworkMonitor):
@@ -1211,7 +1178,6 @@ class FilesTab(QWidget):
             self._log.append(f"[v] {info.get('file','?')}")
             SIG.toast.emit("Y-Connect", f"Sent: {info.get('file','?')}")
 
-# ── Phone Tab ─────────────────────────────────────────────────────────────────
 class PhoneTab(QWidget):
     def __init__(self, tr, prefs: Preferences, context_engine: ContextEngine):
         super().__init__()
@@ -1302,7 +1268,6 @@ class PhoneTab(QWidget):
                 reply_input.returnPressed.connect(make_handler(reply_input))
             self._nl.addWidget(item)
 
-# ── Clipboard Tab ─────────────────────────────────────────────────────────────
 class ClipboardTab(QWidget):
     def __init__(self, tr, clipboard_sync: ClipboardSync, prefs: Preferences):
         super().__init__()
@@ -1345,7 +1310,6 @@ class ClipboardTab(QWidget):
         self._preview.append(f"[<] {text[:200]}")
         self._preview.moveCursor(QTextCursor.End)
 
-# ── Settings Tab ──────────────────────────────────────────────────────────────
 class SettingsTab(QWidget):
     def __init__(self, tr, prefs: Preferences):
         super().__init__()
@@ -1367,7 +1331,6 @@ class SettingsTab(QWidget):
         bat_h.addWidget(self._bat_spin); bat_h.addStretch(); v.addLayout(bat_h)
         v.addStretch()
 
-# ── Device Panel ──────────────────────────────────────────────────────────────
 class DevicePanel(QWidget):
     def __init__(self, tr, ai_modules: dict):
         super().__init__()
@@ -1509,7 +1472,6 @@ class DevicePanel(QWidget):
         if rssi != -1:
             self._status_tab.update_signal(rssi); self._nm.update_rssi(rssi)
 
-# ── Main Window ───────────────────────────────────────────────────────────────
 class MainWindow(QMainWindow):
     def __init__(self, tr, ai_modules: dict):
         super().__init__()
@@ -1623,9 +1585,6 @@ class MainWindow(QMainWindow):
 
     def closeEvent(self, event): event.ignore(); self.hide()
 
-
-
-# ── Applet ────────────────────────────────────────────────────────────────────
 class YelenaTray:
     def __init__(self):
         self._app = QApplication.instance() or QApplication(sys.argv)
@@ -1741,7 +1700,7 @@ class YelenaTray:
             SIG.toast.emit("Y-Connect", self._("nearby", name))
 
     def _update_signal(self):
-        rssi = getattr(manager,"_last_wifi_rssi",-1)
+        rssi = getattr(manager.ws_server,"_last_wifi_rssi",-1)
         if rssi != self._rssi:
             self._rssi = rssi
             self._tray.setIcon(_icon_for_signal(self._connected,rssi))
@@ -1775,11 +1734,11 @@ class YelenaTray:
         sys.exit(self._app.exec())
 
     def _cb_pair_request(self, ip, device_name):
-        """Called from the WS thread — delegate to Qt main thread via signal."""
+
         SIG.pair_request.emit(ip, device_name)
 
     def _handle_pair_request(self, ip, device_name):
-        """Show pairing popup on the main thread."""
+
         box = QMessageBox(self._window)
         box.setWindowTitle("Y-Connect — Pairing Request")
         box.setText(f"Device <b>{device_name}</b> ({ip}) wants to connect.")
