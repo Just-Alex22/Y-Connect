@@ -1361,8 +1361,11 @@ class YelenaWebSocketServer:
         await self._send(ws, "pong", "")
 
     async def _h_pair_response(self, ws, ip: str, payload: dict):
-
-        pass
+        accepted = payload.get("accepted", False)
+        if accepted:
+            self.accept_pair(ip, trust=True)
+        else:
+            self.reject_pair(ip)
 
     async def _h_wifi_signal(self, ws, ip: str, payload: dict):
 
