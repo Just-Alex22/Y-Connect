@@ -124,8 +124,9 @@ object YelenaDiscovery {
         try {
             val j  = JSONObject(raw)
             if (j.optString("type") != "yelena") return
+            val role = j.optString("role", "")
+            if (role == "android") return
             val os = j.optString("os", "")
-            if (os.contains("Android", ignoreCase = true)) return
 
             val name  = j.optString("name", src)
             val port  = j.optInt("port", 8765)
