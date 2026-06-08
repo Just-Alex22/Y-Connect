@@ -1043,8 +1043,6 @@ class YelenaWebSocketServer:
         self._last_wifi_rssi: int = -1
         self._start_time = time.time()
 
-        self._last_wifi_rssi: int = -1
-
         self._client_info: dict[str, dict] = {}
         self._client_info_lock = threading.Lock()
 
