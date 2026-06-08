@@ -1234,6 +1234,9 @@ class YelenaWebSocketServer:
             }
 
     async def _handle_client(self, websocket, path=None):
+        if path is not None and path != "/ws":
+            await websocket.close(1008, "Invalid path")
+            return
         ip = websocket.remote_address[0] if websocket.remote_address else "?"
 
         print(f"[ws] 🔌 NEW CONNECTION ATTEMPT from {ip}")
