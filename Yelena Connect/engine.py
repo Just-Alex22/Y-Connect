@@ -1,9 +1,3 @@
-"""
-engine.py - Backend for Yelena Connect
-Handles: ADB, scrcpy, resource monitoring, notifications, media control,
-         phone calls, WebSocket server, UDP discovery, pairing auth
-"""
-
 import subprocess
 import threading
 import time
@@ -21,8 +15,6 @@ from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 from typing import Optional, Callable
 
-# ── Optional Dependencies ─────────────────────────────────────────────────────
-
 try:
     import websockets
     import websockets.server
@@ -38,26 +30,21 @@ except ImportError:
     HAS_PSUTIL = False
     print("[ws] 'psutil' not installed. Run: pip install psutil")
 
-# ─── Paths ────────────────────────────────────────────────────────────────────
-
 BASE_DIR = Path(__file__).parent
 SCRCPY_DIR = BASE_DIR / "scrcpy"
 SCRCPY_BIN = SCRCPY_DIR / "scrcpy"
 ADB_BIN = SCRCPY_DIR / "adb"
 PAIRING_FILE = BASE_DIR / ".trusted_devices"
 
-
 def get_adb() -> str:
     if ADB_BIN.exists():
         return str(ADB_BIN)
     return "adb"
 
-
 def get_scrcpy() -> str:
     if SCRCPY_BIN.exists():
         return str(SCRCPY_BIN)
     return "scrcpy"
-
 
 def get_local_ip() -> str:
     try:
@@ -68,9 +55,6 @@ def get_local_ip() -> str:
         return ip
     except Exception:
         return "127.0.0.1"
-
-
-# ─── ADB Helpers ──────────────────────────────────────────────────────────────
 
 def adb(args: list, device_serial: str = None, timeout: int = 5) -> str:
     cmd = [get_adb()]
@@ -85,18 +69,11 @@ def adb(args: list, device_serial: str = None, timeout: int = 5) -> str:
     except Exception:
         return ""
 
-
 def adb_shell(cmd_str: str, device_serial: str = None, timeout: int = 5) -> str:
     return adb(["shell", cmd_str], device_serial=device_serial, timeout=timeout)
 
-
-# ─── Device Discovery ─────────────────────────────────────────────────────────
-
 def list_devices() -> list[dict]:
-    """
-    Returns connected ADB devices.
-    Parses model from 'adb devices -l' output — no extra ADB round-trips.
-    """
+
     output = adb(["devices", "-l"], timeout=8)
     devices = []
     for line in output.splitlines()[1:]:
@@ -111,7 +88,6 @@ def list_devices() -> list[dict]:
         if state != "device":
             continue
 
-        # Parse model:XXX from the line directly (no extra adb call)
         model_m = re.search(r"model:(\S+)", line)
         name = model_m.group(1) if model_m else serial
 
@@ -125,26 +101,20 @@ def list_devices() -> list[dict]:
         })
     return devices
 
-
 def connect_wifi(ip: str, port: int = 5555) -> tuple[bool, str]:
     output = adb(["connect", f"{ip}:{port}"], timeout=10)
     if "connected" in output.lower():
         return True, output
     return False, output
 
-
 def disconnect_wifi(serial: str) -> bool:
     output = adb(["disconnect", serial], timeout=5)
     return "disconnected" in output.lower()
-
-
-# ─── Scrcpy ───────────────────────────────────────────────────────────────────
 
 class ScrcpySession:
     def __init__(self):
         self._proc: Optional[subprocess.Popen] = None
         self._lock = threading.Lock()
-        # Set executable bit once, not on every start
         if SCRCPY_BIN.exists():
             try:
                 SCRCPY_BIN.chmod(0o755)
@@ -181,9 +151,6 @@ class ScrcpySession:
     def is_running(self) -> bool:
         with self._lock:
             return self._proc is not None and self._proc.poll() is None
-
-
-# ─── Resource Monitor ─────────────────────────────────────────────────────────
 
 class ResourceMonitor:
     def __init__(self):
@@ -228,14 +195,12 @@ class ResourceMonitor:
         s = self._serial
         result: dict = {}
 
-        # Run all ADB calls in parallel — eliminates the 20-second stall
         with ThreadPoolExecutor(max_workers=4) as pool:
             f_cpu = pool.submit(adb_shell, "dumpsys cpuinfo | grep TOTAL", s, 4)
             f_mem = pool.submit(adb_shell, "cat /proc/meminfo", s, 4)
             f_bat = pool.submit(adb_shell, "dumpsys battery", s, 4)
             f_sto = pool.submit(adb_shell, "df /data 2>/dev/null | tail -1", s, 4)
 
-        # CPU
         try:
             cpu_raw = f_cpu.result(timeout=6)
             match = re.search(r"([\d.]+)%\s+TOTAL", cpu_raw)
@@ -249,7 +214,6 @@ class ResourceMonitor:
         except Exception:
             result["cpu"] = 0.0
 
-        # RAM
         try:
             mem_raw = f_mem.result(timeout=6)
             total = self._parse_meminfo(mem_raw, "MemTotal")
@@ -264,7 +228,6 @@ class ResourceMonitor:
             result["ram_total_mb"] = 0
             result["ram_pct"] = 0.0
 
-        # Battery
         try:
             bat_raw = f_bat.result(timeout=6)
             level_m = re.search(r"level:\s*(\d+)", bat_raw)
@@ -278,7 +241,6 @@ class ResourceMonitor:
             result["battery_temp"] = 0.0
             result["battery_charging"] = False
 
-        # Storage
         try:
             df_raw = f_sto.result(timeout=6)
             parts = df_raw.split()
@@ -318,9 +280,6 @@ class ResourceMonitor:
     def get_data(self) -> dict:
         with self._data_lock:
             return self._data.copy()
-
-
-# ─── Notification Monitor ─────────────────────────────────────────────────────
 
 class NotificationMonitor:
     _APP_NAMES = {
@@ -423,9 +382,6 @@ class NotificationMonitor:
     def _pkg_to_name(cls, pkg: str) -> str:
         return cls._APP_NAMES.get(pkg, pkg.split(".")[-1].capitalize())
 
-
-# ─── Media Controller ─────────────────────────────────────────────────────────
-
 class MediaController:
     def __init__(self):
         self._serial: Optional[str] = None
@@ -490,7 +446,6 @@ class MediaController:
                             and not val.startswith("size="):
                         result[field] = val[:80]
 
-        # Fallback: MediaStyle notification
         if not result["title"]:
             notif = adb_shell(
                 "dumpsys notification --noredact 2>/dev/null",
@@ -515,7 +470,6 @@ class MediaController:
                     if result["title"]:
                         break
 
-        # Last resort: description=
         if not result["title"] and raw:
             dm = re.search(r"\bdescription\s*=\s*([^\n,]+)", raw, re.IGNORECASE)
             if dm:
@@ -548,9 +502,6 @@ class MediaController:
         with self._current_lock:
             return self._current.copy()
 
-
-# ─── Phone / Keypad ───────────────────────────────────────────────────────────
-
 class PhoneController:
     def __init__(self):
         self._serial: Optional[str] = None
@@ -561,7 +512,7 @@ class PhoneController:
     def dial(self, number: str) -> bool:
         if not self._serial:
             return False
-        clean = re.sub(r"[^\d+*#]", "", number)
+        clean = re.sub(r"[^\d+*
         if not clean:
             return False
         out = adb_shell(
@@ -573,7 +524,7 @@ class PhoneController:
     def open_dialer(self, number: str = "") -> bool:
         if not self._serial:
             return False
-        clean = re.sub(r"[^\d+*#]", "", number)
+        clean = re.sub(r"[^\d+*
         uri = f"tel:{clean}" if clean else "tel:"
         out = adb_shell(
             f"am start -a android.intent.action.DIAL -d {uri}",
@@ -597,17 +548,10 @@ class PhoneController:
         if code and self._serial:
             adb_shell(f"input keyevent {code}", self._serial)
 
-
-# ─── Input Controller ─────────────────────────────────────────────────────────
-
 class InputController:
-    """
-    Unified input — auto-detects X11 vs Wayland once, caches the result.
-    Avoids spawning xdpyinfo on every keystroke.
-    """
 
     def __init__(self):
-        self._mode: Optional[str] = None   # "x11" or "wayland"
+        self._mode: Optional[str] = None
         self._display_env: Optional[dict] = None
 
     def _build_display_env(self) -> dict:
@@ -655,7 +599,7 @@ class InputController:
             return False
 
     def _ensure_detected(self):
-        """Detect once, cache forever. Call reset_detection() if display changes."""
+
         if self._mode is not None:
             return
         self._display_env = self._build_display_env()
@@ -729,15 +673,11 @@ class InputController:
             self._input_cmd(xdo_args=["click", "5"], ydo_args=["click", "-b", "5"])
 
     def reset_detection(self):
-        """Force re-detection on next call (e.g., after display switch)."""
+
         self._mode = None
         self._display_env = None
 
-
-# ─── Persistent Terminal ──────────────────────────────────────────────────────
-
 class PersistentBash:
-    """Single bash process that keeps state (cwd, env vars) between commands."""
 
     SENTINEL = "__YELENA_CMD_DONE__"
 
@@ -761,7 +701,7 @@ class PersistentBash:
         )
 
     def _restart(self):
-        """Safely close old process and start a new one."""
+
         try:
             if self._proc and self._proc.poll() is None:
                 self._proc.stdin.close()
@@ -810,7 +750,7 @@ class PersistentBash:
             return out or "(no output)", exit_code
 
     def close(self):
-        """Clean up the bash process."""
+
         with self._lock:
             try:
                 if self._proc and self._proc.poll() is None:
@@ -824,11 +764,7 @@ class PersistentBash:
                     pass
             self._proc = None
 
-
-# ─── Clipboard Manager ────────────────────────────────────────────────────────
-
 class ClipboardManager:
-    """Read/write PC clipboard via xclip, with change detection and history."""
 
     def __init__(self):
         self._last: str = ""
@@ -890,7 +826,7 @@ class ClipboardManager:
             print(f"[clipboard] set error: {e}")
 
     def check_changed(self) -> Optional[str]:
-        """Returns new clipboard text if it changed since last set/detected, else None."""
+
         current = self.get()
         if current and current != self._last:
             self._last = current
@@ -905,11 +841,7 @@ class ClipboardManager:
     def history(self) -> list[str]:
         return self._history.copy()
 
-
-# ─── Trusted Device Store ─────────────────────────────────────────────────────
-
 class TrustedDeviceStore:
-    """File-based store for paired device fingerprints."""
 
     def __init__(self, path: Path = PAIRING_FILE):
         self._path = path
@@ -952,14 +884,7 @@ class TrustedDeviceStore:
         with self._lock:
             return list(self._trusted)
 
-
-# ─── UDP Discovery ────────────────────────────────────────────────────────────
-
 class YelenaDiscovery:
-    """
-    UDP broadcast discovery — like KDE Connect.
-    Uses two sockets: send (ephemeral) and receive (port 1716).
-    """
 
     UDP_PORT = 1716
     INTERVAL = 3.0
@@ -1057,7 +982,6 @@ class YelenaDiscovery:
                 data, addr = self._recv_sock.recvfrom(4096)
                 src_ip = addr[0]
 
-                # DEBUG LOG: Print everything we receive
                 print(f"[udp] Raw packet from {src_ip}: {data[:120]}")
 
                 try:
@@ -1101,12 +1025,9 @@ class YelenaDiscovery:
                     print(f"[udp] Error receiving: {e}")
                 time.sleep(1)
 
-# ─── WebSocket Server ─────────────────────────────────────────────────────────
-
 _CLIENT_UNPAIRED = "unpaired"
 _CLIENT_PENDING = "pending"
 _CLIENT_PAIRED = "paired"
-
 
 class YelenaWebSocketServer:
 
@@ -1124,18 +1045,15 @@ class YelenaWebSocketServer:
 
         self._last_wifi_rssi: int = -1
 
-        # Client tracking: ip → {ws, state, info}
         self._client_info: dict[str, dict] = {}
         self._client_info_lock = threading.Lock()
 
-        # Pairing
         self._trusted_store = TrustedDeviceStore()
         self._on_pair_request_cbs: list[Callable] = []
         self._on_pair_accepted_cbs: list[Callable] = []
         self._on_pair_rejected_cbs: list[Callable] = []
         self._on_disconnect_cbs: list[Callable] = []
 
-        # Sub-systems (extracted from god-class)
         self._input = InputController()
         self._clipboard = ClipboardManager()
         self._bash = PersistentBash()
@@ -1163,14 +1081,13 @@ class YelenaWebSocketServer:
             "presentation":          self._h_presentation,
             "get_clipboard_history": self._h_clipboard_history,
         }
-    # ── Pairing callbacks ───────────────────────────────────────────────────
 
     def on_pair_request(self, cb: Callable):
-        """cb(ip, device_name) — PC UI should show a popup."""
+
         self._on_pair_request_cbs.append(cb)
 
     def on_pair_accepted(self, cb: Callable):
-        """cb(ip, device_info) — called when pairing is accepted."""
+
         self._on_pair_accepted_cbs.append(cb)
 
     def on_pair_rejected(self, cb: Callable):
@@ -1179,13 +1096,8 @@ class YelenaWebSocketServer:
     def on_client_disconnected(self, cb: Callable):
         self._on_disconnect_cbs.append(cb)
 
-    # ── Pairing actions (called by PC UI) ───────────────────────────────────
-
     def accept_pair(self, ip: str, trust: bool = True):
-        """
-        Accept a pending pairing request.
-        If trust=True, the device fingerprint is saved for auto-accept next time.
-        """
+
         with self._client_info_lock:
             info = self._client_info.get(ip)
             if not info or info["state"] != _CLIENT_PENDING:
@@ -1198,11 +1110,9 @@ class YelenaWebSocketServer:
             fp = self._fingerprint(ip, device_info)
             self._trusted_store.trust(fp)
 
-        # Notify the phone
         asyncio.run_coroutine_threadsafe(
             self._send(ws, "pair_accepted", {"trusted": trust}), self._loop
         )
-        # Send initial state now that the client is paired
         asyncio.run_coroutine_threadsafe(
             self._send_initial_state(ws), self._loop
         )
@@ -1214,7 +1124,7 @@ class YelenaWebSocketServer:
                 pass
 
     def reject_pair(self, ip: str):
-        """Reject a pending pairing request and close the connection."""
+
         with self._client_info_lock:
             info = self._client_info.get(ip)
             if not info:
@@ -1231,24 +1141,22 @@ class YelenaWebSocketServer:
 
     async def _reject_and_close(self, ws, ip: str):
         await self._send(ws, "pair_rejected", {})
-        await asyncio.sleep(0.3)  # let the message arrive
+        await asyncio.sleep(0.3)
         try:
             await ws.close()
         except Exception:
             pass
 
     def untrust_device(self, ip: str, device_info: dict):
-        """Remove a device from the trusted list."""
+
         fp = self._fingerprint(ip, device_info)
         self._trusted_store.untrust(fp)
 
     @staticmethod
     def _fingerprint(ip: str, device_info: dict) -> str:
-        """Device identity for trust store — IP + hostname."""
+
         name = device_info.get("name", "") if isinstance(device_info, dict) else ""
         return f"{ip}|{name}"
-
-    # ── Control ─────────────────────────────────────────────────────────────
 
     def start(self):
         if self._running or not HAS_WEBSOCKETS:
@@ -1278,8 +1186,6 @@ class YelenaWebSocketServer:
                 if info["state"] == _CLIENT_PAIRED
             ]
 
-    # ── Asyncio Loop ────────────────────────────────────────────────────────
-
     def _run_loop(self):
         self._loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self._loop)
@@ -1301,8 +1207,6 @@ class YelenaWebSocketServer:
             loop.create_task(self._clipboard_loop())
             while self._running:
                 await asyncio.sleep(1)
-
-    # ── Broadcast Loops ─────────────────────────────────────────────────────
 
     async def _resource_loop(self):
         loop = asyncio.get_event_loop()
@@ -1331,14 +1235,11 @@ class YelenaWebSocketServer:
                 if info["state"] == _CLIENT_PAIRED
             }
 
-    # ── Client Handler ──────────────────────────────────────────────────────
-
     async def _handle_client(self, websocket, path=None):
         ip = websocket.remote_address[0] if websocket.remote_address else "?"
 
         print(f"[ws] 🔌 NEW CONNECTION ATTEMPT from {ip}")
 
-        # Try to get the real name from UDP discovery instead of just the IP
         device_name = ip
         if hasattr(self._mgr, 'discovery') and self._mgr.discovery:
             with self._mgr.discovery._devices_lock:
@@ -1362,21 +1263,17 @@ class YelenaWebSocketServer:
         print(f"[ws] Client connected: {device_name} @ {ip} (trusted={is_trusted})")
 
         try:
-            # Send pc_info IMMEDIATELY so the phone knows the connection is alive
             await self._send(websocket, "pc_info", self._pc_info())
 
             if state == _CLIENT_PAIRED:
-                # Trusted device — auto-accept, no popup
                 await self._send(websocket, "pair_accepted", {"trusted": True})
 
-                # 1. Notify UI IMMEDIATELY so the PC GUI updates right away!
                 for cb in self._on_pair_accepted_cbs:
                     try:
                         cb(device_info)
                     except Exception as e:
                         print(f"[ws] Error in on_pair_accepted callback: {e}")
 
-                # 2. Send the rest of the initial state (wrapped in try/except so it doesn't kill the connection)
                 try:
                     loop = asyncio.get_event_loop()
                     res = await loop.run_in_executor(None, self._get_pc_resources)
@@ -1388,14 +1285,12 @@ class YelenaWebSocketServer:
                     print(f"[ws] Error sending initial state to {ip}: {e}")
 
             else:
-                # Unknown device — request pairing
                 with self._client_info_lock:
                     self._client_info[ip]["state"] = _CLIENT_PENDING
                 await self._send(websocket, "pair_request", {
                     "name": socket.gethostname(),
                     "ip": get_local_ip(),
                 })
-                # Trigger PC popup
                 for cb in self._on_pair_request_cbs:
                     try:
                         cb(ip, device_info.get("name", ip))
@@ -1429,15 +1324,12 @@ class YelenaWebSocketServer:
         if clip:
             await self._send(ws, "clipboard", {"text": clip})
 
-    # ── Message Dispatch ────────────────────────────────────────────────────
-
     async def _handle_message(self, ws, ip: str, raw: str):
         try:
             msg = json.loads(raw)
             mtype = msg.get("type", "")
             payload = msg.get("payload", {})
 
-            # Backwards compat: payload might be a JSON string
             if isinstance(payload, str) and payload:
                 try:
                     payload = json.loads(payload)
@@ -1450,7 +1342,6 @@ class YelenaWebSocketServer:
             print(f"[ws] Parse error from {ip}: {e}")
             return
 
-        # Unpaired/pending clients can only send ping and pair_response
         with self._client_info_lock:
             info = self._client_info.get(ip)
             client_state = info["state"] if info else _CLIENT_UNPAIRED
@@ -1468,17 +1359,15 @@ class YelenaWebSocketServer:
         else:
             print(f"[ws] Unknown message type: '{mtype}'")
 
-    # ── Individual Message Handlers ─────────────────────────────────────────
-
     async def _h_ping(self, ws, ip: str, payload: dict):
         await self._send(ws, "pong", "")
 
     async def _h_pair_response(self, ws, ip: str, payload: dict):
-        """Phone acknowledges the pair_request — still needs PC approval."""
+
         pass
 
     async def _h_wifi_signal(self, ws, ip: str, payload: dict):
-        """Receive WiFi signal strength from the Android app."""
+
         rssi = payload.get("rssi", -1)
         if isinstance(rssi, (int, float)):
             self._last_wifi_rssi = int(rssi)
@@ -1610,19 +1499,9 @@ class YelenaWebSocketServer:
             "items": self._clipboard.history
         })
 
-    # ── Broadcast ───────────────────────────────────────────────────────────
-
     def broadcast(self, mtype: str, payload):
-        """Public broadcast for external modules (like tray.py)."""
-        self._broadcast(mtype, payload)
 
-    def broadcast_media(self, data: dict):
-        self._broadcast("media", {
-            "title": data.get("title", ""),
-            "artist": data.get("artist", ""),
-            "album": data.get("album", ""),
-            "playing": data.get("playing", False),
-        })
+        self._broadcast(mtype, payload)
 
     def broadcast_media(self, data: dict):
         self._broadcast("media", {
@@ -1657,7 +1536,7 @@ class YelenaWebSocketServer:
     async def _broadcast_to(self, mtype: str, payload, clients: set):
         if not clients:
             return
-        msg = json.dumps({"type": mtype, "payload": json.dumps(payload)})  # REVERTED: Double serialize for Android
+        msg = json.dumps({"type": mtype, "payload": json.dumps(payload)})
         dead = set()
         for ws in clients:
             try:
@@ -1668,10 +1547,8 @@ class YelenaWebSocketServer:
 
     @staticmethod
     async def _send(ws, mtype: str, payload):
-        msg = json.dumps({"type": mtype, "payload": json.dumps(payload)})  # REVERTED: Double serialize for Android
+        msg = json.dumps({"type": mtype, "payload": json.dumps(payload)})
         await ws.send(msg)
-
-    # ── PC Resources ────────────────────────────────────────────────────────
 
     def _get_pc_resources(self) -> dict:
         if not HAS_PSUTIL:
@@ -1712,8 +1589,6 @@ class YelenaWebSocketServer:
             "version": "Yelena Connect v0.3",
         }
 
-    # ── Processes ───────────────────────────────────────────────────────────
-
     @staticmethod
     def _get_processes() -> list:
         if not HAS_PSUTIL:
@@ -1722,7 +1597,7 @@ class YelenaWebSocketServer:
             procs_map: dict = {}
             for p in psutil.process_iter(['pid', 'name', 'memory_percent']):
                 try:
-                    p.cpu_percent()  # initialize — first call returns 0
+                    p.cpu_percent()
                     procs_map[p.pid] = p
                 except (psutil.NoSuchProcess, psutil.AccessDenied):
                     pass
@@ -1730,7 +1605,7 @@ class YelenaWebSocketServer:
             result = []
             for pid, p in procs_map.items():
                 try:
-                    cpu = p.cpu_percent()  # now returns real value
+                    cpu = p.cpu_percent()
                     mem = p.memory_percent()
                     result.append({
                         "pid": pid,
@@ -1756,8 +1631,6 @@ class YelenaWebSocketServer:
         except Exception as e:
             print(f"[ws] kill_process {pid}: {e}")
             return False
-
-    # ── Apps ────────────────────────────────────────────────────────────────
 
     @staticmethod
     def _get_apps() -> list:
@@ -1808,8 +1681,6 @@ class YelenaWebSocketServer:
         except Exception as e:
             print(f"[ws] launch_app error: {e}")
 
-    # ── Brightness ──────────────────────────────────────────────────────────
-
     @staticmethod
     def _get_brightness() -> int:
         try:
@@ -1835,8 +1706,6 @@ class YelenaWebSocketServer:
         except Exception:
             pass
 
-    # ── Desktop Notifications ───────────────────────────────────────────────
-
     @staticmethod
     def _desktop_notify(title: str, body: str):
         try:
@@ -1846,8 +1715,6 @@ class YelenaWebSocketServer:
             )
         except Exception:
             pass
-
-    # ── Connection Info ─────────────────────────────────────────────────────
 
     @staticmethod
     def get_connection_info() -> dict:
@@ -1860,15 +1727,7 @@ class YelenaWebSocketServer:
     def get_qr_text(self) -> str:
         return json.dumps(self.get_connection_info())
 
-
-# ─── Connection Manager (top-level facade) ────────────────────────────────────
-
 class ConnectionManager:
-    """
-    Central manager. gtk.py/tray.py only talk to this.
-    Integrates ADB, scrcpy, monitors, WS server, and discovery.
-    Single unified class — no more monkey-patching.
-    """
 
     def __init__(self):
         self.serial: Optional[str] = None
@@ -1887,23 +1746,17 @@ class ConnectionManager:
         self._on_connect_cbs: list[Callable] = []
         self._on_disconnect_cbs: list[Callable] = []
 
-        # Wire up ADB monitors → WebSocket broadcast
         self.notifications.add_callback(self.ws_server.broadcast_notifications)
         self.media.add_callback(self.ws_server.broadcast_media)
 
-        # Start WS server and UDP discovery
         self.ws_server.start()
         self.discovery.start()
-
-    # ── Callbacks ──────────────────────────────────────────────────────────
 
     def on_connect(self, cb: Callable):
         self._on_connect_cbs.append(cb)
 
     def on_disconnect(self, cb: Callable):
         self._on_disconnect_cbs.append(cb)
-
-    # ── Device handling ────────────────────────────────────────────────────
 
     def connect_device(self, device: dict) -> bool:
         self.disconnect()
@@ -1957,8 +1810,6 @@ class ConnectionManager:
     def is_connected(self) -> bool:
         return self.serial is not None
 
-    # ── Discovery & WS shortcuts ───────────────────────────────────────────
-
     def on_android_found(self, cb: Callable):
         self.discovery.on_device_found(cb)
 
@@ -1977,7 +1828,6 @@ class ConnectionManager:
     def is_wifi_connected(self) -> bool:
         return self.ws_server.has_clients()
 
-
     def on_pair_request(self, cb: Callable):
         self.ws_server.on_pair_request(cb)
 
@@ -1986,7 +1836,5 @@ class ConnectionManager:
 
     def reject_pair(self, ip: str):
         self.ws_server.reject_pair(ip)
-
-
 
 manager = ConnectionManager()
