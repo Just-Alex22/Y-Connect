@@ -730,6 +730,7 @@ class ClipboardSync:
         if mime and mime.hasText():
             text = mime.text()
             if text != self._last_sent and text != self._last_recv:
+                self._debounce.timeout.disconnect()
                 self._debounce.timeout.connect(lambda: self.send_clipboard(text))
                 if not self._debounce.isActive(): self._debounce.start()
 
