@@ -1,7 +1,7 @@
-# Y-Connect
+ Y-Connect
 
 <p align="center">
-  <img src="Yelena Connect/assets/logo.svg" alt="Yelena Connect Logo" width="150"/>
+  <img src="Yelena Connect/assets/logo.svg" alt="Y-Connect Logo" width="150"/>
 </p>
 
 ## What is Y-Connect?
@@ -29,7 +29,7 @@ The PC runs a lightweight PySide6 app that opens a WebSocket server on your loca
 ### PC
 - **Python 3.10+**
 - **Qt 6**
-- **PySide6t**
+- **PySide6**
 - **websockets** · **psutil**
 - **xdotool** (X11) or **ydotool** (Wayland)
 - **xclip** (clipboard)
@@ -44,17 +44,17 @@ The PC runs a lightweight PySide6 app that opens a WebSocket server on your loca
 Clone the repository and install dependencies:
 
 ```bash
-git clone https://github.com/Just-Alex22/Yelena-Connect.git
+git clone https://github.com/Just-Alex22/Y-Connect.git
 cd Yelena-Connect
 
 pip install websockets psutil --break-system-packages
 sudo apt install xclip xdotool
 ```
 
-Run the applet:
+Run the app:
 
 ```bash
-python3 "Yelena Connect/main.py"
+python3 Y-Connect/main.py
 ```
 
 ### Android app
@@ -62,13 +62,13 @@ python3 "Yelena Connect/main.py"
 Download APK from releases or build from source:
 
 ```bash
-cd YelenaAndroid
+cd Y-Connect
 ./gradlew assembleRelease
 ```
 
 ## Contributing
 
-If you want to collaborate with the development of **Yelena Connect**, follow us on ShitHub and send your **Pull Requests** and **Issues** through the repository.
+If you want to collaborate with the development of **Y-Connect**, follow us on ShitHub and send your **Pull Requests** and **Issues** through the repository.
 
 ## License
 
@@ -77,4 +77,4 @@ This program comes with the GNU GPLv3 license, consult https://www.gnu.org/licen
 ---
 
 > **Development:** [Just_Alex](https://github.com/Just-Alex22)
-> **Repository:** [yelena-connect](https://github.com/cuerdos/yelena-connect)
+> **Repository:** [yelena-connect](https://github.com/cuerdos-project/Y-Connect)
