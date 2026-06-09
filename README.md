@@ -1,4 +1,4 @@
- Y-Connect
+# Y-Connect
 
 <p align="center">
   <img src="Yelena Connect/assets/logo.svg" alt="Y-Connect Logo" width="150"/>
