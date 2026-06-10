@@ -512,7 +512,7 @@ class PhoneController:
     def dial(self, number: str) -> bool:
         if not self._serial:
             return False
-        clean = re.sub(r"[^\d+*
+        clean = re.sub(r"[^\d+*#()-]", "", number)
         if not clean:
             return False
         out = adb_shell(
@@ -524,7 +524,7 @@ class PhoneController:
     def open_dialer(self, number: str = "") -> bool:
         if not self._serial:
             return False
-        clean = re.sub(r"[^\d+*
+        clean = re.sub(r"[^\d+*#()-]", "", number)
         uri = f"tel:{clean}" if clean else "tel:"
         out = adb_shell(
             f"am start -a android.intent.action.DIAL -d {uri}",
