@@ -1815,7 +1815,7 @@ class ConnectionManager:
         return connect_wifi(ip, port)
 
     def is_connected(self) -> bool:
-        return self.serial is not None
+        return self.serial is not None or self.ws_server.has_clients()
 
     def on_android_found(self, cb: Callable):
         self.discovery.on_device_found(cb)
