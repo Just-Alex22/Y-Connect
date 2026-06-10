@@ -1152,9 +1152,7 @@ class YelenaWebSocketServer:
 
     @staticmethod
     def _fingerprint(ip: str, device_info: dict) -> str:
-
-        name = device_info.get("name", "") if isinstance(device_info, dict) else ""
-        return f"{ip}|{name}"
+        return ip
 
     def start(self):
         if self._running or not HAS_WEBSOCKETS:
