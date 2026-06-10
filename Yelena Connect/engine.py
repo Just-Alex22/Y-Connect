@@ -1365,6 +1365,11 @@ class YelenaWebSocketServer:
 
     async def _h_pair_response(self, ws, ip: str, payload: dict):
         accepted = payload.get("accepted", False)
+        with self._client_info_lock:
+            info = self._client_info.get(ip)
+            if not info:
+                return
+            info["state"] = _CLIENT_PENDING
         if accepted:
             self.accept_pair(ip, trust=True)
         else:
