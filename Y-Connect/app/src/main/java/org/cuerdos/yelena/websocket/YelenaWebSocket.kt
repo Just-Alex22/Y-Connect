@@ -40,7 +40,7 @@ object YelenaWebSocket {
     val pcMedia            = MutableStateFlow(PcMedia())
     val pcNotifications    = MutableStateFlow<List<PcNotification>>(emptyList())
     val phoneNotifications = MutableStateFlow<List<PcNotification>>(emptyList())
-    val wifiSignal          = MutableStateFlow(-1)  // dBm, -1 = desconocido
+    val wifiSignal          = MutableStateFlow(-1)
     val terminalOutput     = MutableSharedFlow<TerminalOutput>(replay = 1)
     val clipboard          = MutableStateFlow("")
     val fileReceived       = MutableStateFlow<Pair<String, String>?>(null)
@@ -48,8 +48,6 @@ object YelenaWebSocket {
     val apps               = MutableStateFlow<List<Map<String, String>>>(emptyList())
     val clipboardHistory   = MutableStateFlow<List<String>>(emptyList())
 
-    // Callback para avisar a MainActivity que ignore el próximo cambio de portapapeles
-    // Flag interno para evitar eco — no depende de callbacks externos
     @Volatile private var ignoreNextClipChange = false
     var onClipboardFromPc: (() -> Unit)? = null
 
@@ -59,7 +57,6 @@ object YelenaWebSocket {
 
     var appContext: Context? = null
 
-    // IP/puerto del último servidor — para reconexión instantánea al volver
     var lastIp   = ""
         private set
     var lastPort = WS_PORT
@@ -70,7 +67,7 @@ object YelenaWebSocket {
         lastPort = port
         connectJob?.cancel()
         connectionState.value = ConnectionState.Connecting
-        Log.i(TAG, "Conectando a ws://$ip:$port/ws")
+        Log.i(TAG, "Conectando a ws:
         connectJob = scope.launch {
             try {
                 client.webSocket(host = ip, port = port, path = "/ws") {
@@ -92,7 +89,7 @@ object YelenaWebSocket {
     }
 
     fun disconnect() {
-        lastIp = ""   // limpiar para que onResume no reconecte
+        lastIp = ""
         lastPort = WS_PORT
         connectJob?.cancel()
         scope.launch { try { session?.close(CloseReason(CloseReason.Codes.NORMAL, "OK")) } catch (_: Exception) {} }
@@ -140,6 +137,13 @@ object YelenaWebSocket {
             val msg = json.decodeFromString<WsMessage>(raw)
             when (msg.type) {
                 "pong"                -> Log.d(TAG, "pong")
+                "pair_request"        -> handlePairRequest()
+                "pair_accepted"       -> Log.i(TAG, "Pairing accepted by PC")
+                "pair_rejected"       -> {
+                    Log.w(TAG, "Pairing rejected by PC")
+                    connectionState.value = ConnectionState.Error("Pairing rejected")
+                    session?.close(CloseReason(CloseReason.Codes.NORMAL, "rejected"))
+                }
                 "pc_info"             -> connectionState.value = ConnectionState.Connected(json.decodeFromString(msg.payload))
                 "resources"           -> pcResources.value          = json.decodeFromString(msg.payload)
                 "media"               -> pcMedia.value              = json.decodeFromString(msg.payload)
@@ -158,16 +162,27 @@ object YelenaWebSocket {
         }
     }
 
+    private fun handlePairRequest() {
+        scope.launch {
+            try {
+                session?.send(Frame.Text(json.encodeToString(
+                    WsMessage("pair_response", """{"accepted":true}""")
+                )))
+                Log.i(TAG, "pair_response sent")
+            } catch (e: Exception) {
+                Log.e(TAG, "pair_response: ${e.message}")
+            }
+        }
+    }
+
     private fun handleClipboardFromPc(payload: String) {
         try {
             val obj  = org.json.JSONObject(payload)
             val text = obj.optString("text").takeIf { it.isNotEmpty() } ?: return
-            if (text == clipboard.value) return  // ya lo tenemos
+            if (text == clipboard.value) return
 
-            // Marcar flag ANTES de cambiar el portapapeles del sistema
-            // para que el ClipboardManager listener no lo reenvíe al PC
             ignoreNextClipChange = true
-            onClipboardFromPc?.invoke()  // compatibilidad hacia atrás
+            onClipboardFromPc?.invoke()
 
             clipboard.value = text
             Log.d(TAG, "Portapapeles PC→Android: ${text.take(40)}")
