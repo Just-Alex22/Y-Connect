@@ -1109,15 +1109,12 @@ class YelenaWebSocketServer:
             self._trusted_store.trust(fp)
 
         asyncio.run_coroutine_threadsafe(
-            self._send(ws, "pair_accepted", {"trusted": trust}), self._loop
-        )
-        asyncio.run_coroutine_threadsafe(
-            self._send_initial_state(ws), self._loop
+            self._accept_and_init(ws, trust), self._loop
         )
 
         for cb in self._on_pair_accepted_cbs:
             try:
-                cb(ip, device_info)
+                cb(device_info)
             except Exception:
                 pass
 
@@ -1313,6 +1310,25 @@ class YelenaWebSocketServer:
                     cb(ip)
                 except Exception:
                     pass
+
+    async def _accept_and_init(self, ws, trust: bool):
+        try:
+            await self._send(ws, "pair_accepted", {"trusted": trust})
+            if ws.closed:
+                return
+            await self._send(ws, "pc_info", self._pc_info())
+            if ws.closed:
+                return
+            loop = asyncio.get_event_loop()
+            res = await loop.run_in_executor(None, self._get_pc_resources)
+            if ws.closed:
+                return
+            await self._send(ws, "resources", res)
+            clip = self._clipboard.get()
+            if clip and not ws.closed:
+                await self._send(ws, "clipboard", {"text": clip})
+        except Exception:
+            pass
 
     async def _send_initial_state(self, ws):
         await self._send(ws, "pc_info", self._pc_info())
