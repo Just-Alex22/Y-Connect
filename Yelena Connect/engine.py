@@ -1397,7 +1397,7 @@ class YelenaWebSocketServer:
 
     async def _h_media_command(self, ws, ip: str, payload: dict):
         action = payload.get("action", "")
-        if self._mgr.is_connected():
+        if self._mgr.serial is not None:
             cmd_map = {
                 "play_pause": self._mgr.media.play_pause,
                 "next": self._mgr.media.next_track,
