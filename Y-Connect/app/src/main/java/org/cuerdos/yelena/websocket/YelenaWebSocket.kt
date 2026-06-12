@@ -67,7 +67,7 @@ object YelenaWebSocket {
         lastPort = port
         connectJob?.cancel()
         connectionState.value = ConnectionState.Connecting
-        Log.i(TAG, "Conectando a ws:
+        Log.i(TAG, "Conectando a ws://$ip:$port/ws")
         connectJob = scope.launch {
             try {
                 client.webSocket(host = ip, port = port, path = "/ws") {
