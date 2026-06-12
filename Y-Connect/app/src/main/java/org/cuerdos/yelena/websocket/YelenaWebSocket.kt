@@ -142,7 +142,7 @@ object YelenaWebSocket {
                 "pair_rejected"       -> {
                     Log.w(TAG, "Pairing rejected by PC")
                     connectionState.value = ConnectionState.Error("Pairing rejected")
-                    session?.close(CloseReason(CloseReason.Codes.NORMAL, "rejected"))
+                    scope.launch { try { session?.close(CloseReason(CloseReason.Codes.NORMAL, "rejected")) } catch (_: Exception) {} }
                 }
                 "pc_info"             -> connectionState.value = ConnectionState.Connected(json.decodeFromString(msg.payload))
                 "resources"           -> pcResources.value          = json.decodeFromString(msg.payload)
