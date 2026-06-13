@@ -1291,6 +1291,14 @@ class YelenaWebSocketServer:
                     loop = asyncio.get_event_loop()
                     res = await loop.run_in_executor(None, self._get_pc_resources)
                     await self._send(websocket, "resources", res)
+                    media = await loop.run_in_executor(None, self._mgr.media.get_current)
+                    if media:
+                        await self._send(websocket, "media", {
+                            "title":   media.get("title",   ""),
+                            "artist":  media.get("artist",  ""),
+                            "album":   media.get("album",   ""),
+                            "playing": media.get("playing", False),
+                        })
                     clip = self._clipboard.get()
                     if clip:
                         await self._send(websocket, "clipboard", {"text": clip})
@@ -1341,6 +1349,16 @@ class YelenaWebSocketServer:
             if ws.closed:
                 return
             await self._send(ws, "resources", res)
+            if ws.closed:
+                return
+            media = await loop.run_in_executor(None, self._mgr.media.get_current)
+            if media and not ws.closed:
+                await self._send(ws, "media", {
+                    "title":   media.get("title",   ""),
+                    "artist":  media.get("artist",  ""),
+                    "album":   media.get("album",   ""),
+                    "playing": media.get("playing", False),
+                })
             clip = self._clipboard.get()
             if clip and not ws.closed:
                 await self._send(ws, "clipboard", {"text": clip})
