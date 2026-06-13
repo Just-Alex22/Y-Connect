@@ -1210,6 +1210,7 @@ class YelenaWebSocketServer:
             if paired:
                 data = await loop.run_in_executor(None, self._get_pc_resources)
                 await self._broadcast_to("resources", data, paired)
+                self._mgr.on_resources_update(data)
             await asyncio.sleep(2)
 
     async def _media_loop(self):
@@ -1431,10 +1432,10 @@ class YelenaWebSocketServer:
             self.reject_pair(ip)
 
     async def _h_wifi_signal(self, ws, ip: str, payload: dict):
-
         rssi = payload.get("rssi", -1)
         if isinstance(rssi, (int, float)):
             self._last_wifi_rssi = int(rssi)
+            self._mgr.on_rssi_update(int(rssi))
 
     async def _h_media_command(self, ws, ip: str, payload: dict):
         action = payload.get("action", "")
@@ -1830,6 +1831,8 @@ class ConnectionManager:
         self.phone = PhoneController()
 
         self._on_battery_cbs: list[Callable] = []
+        self._on_rssi_cbs: list[Callable] = []
+        self._on_resources_cbs: list[Callable] = []
         self.ws_server = YelenaWebSocketServer(self)
         self.discovery = YelenaDiscovery(ws_port=YelenaWebSocketServer.WS_PORT)
 
@@ -1918,6 +1921,26 @@ class ConnectionManager:
 
     def on_battery_update(self, cb: Callable):
         self._on_battery_cbs.append(cb)
+
+    def on_rssi_update(self, rssi: int):
+        for cb in self._on_rssi_cbs:
+            try:
+                cb(rssi)
+            except Exception:
+                pass
+
+    def on_rssi_changed(self, cb: Callable):
+        self._on_rssi_cbs.append(cb)
+
+    def on_resources_update(self, data: dict):
+        for cb in self._on_resources_cbs:
+            try:
+                cb(data)
+            except Exception:
+                pass
+
+    def on_resources_changed(self, cb: Callable):
+        self._on_resources_cbs.append(cb)
 
     def on_wifi_connected(self, cb: Callable):
         self.ws_server.on_pair_accepted(cb)

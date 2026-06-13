@@ -969,7 +969,7 @@ class StatusTab(QWidget):
         elif status == "fail": self._reconn_lbl.setText(self._("reconn_fail"))
 
     def _on_battery(self, info):
-        pct = info.get("percent", -1); charging = info.get("charging", False)
+        pct = info.get("pct", info.get("percent", -1)); charging = info.get("charging", False)
         if pct >= 0:
             self._bat_bar.setValue(pct)
             text = f"{pct}%"
@@ -1219,7 +1219,7 @@ class PhoneTab(QWidget):
         for b in (self._vd,self._vm,self._vu): b.setEnabled(on)
 
     def _on_battery(self, info):
-        pct = info.get("percent", -1); charging = info.get("charging", False)
+        pct = info.get("pct", info.get("percent", -1)); charging = info.get("charging", False)
         if pct >= 0:
             self._bat_bar.setValue(pct)
             text = f"{pct}%"
@@ -1621,6 +1621,8 @@ class YelenaTray:
         manager.on_android_found(self._cb_found)
         manager.on_pair_request(self._cb_pair_request)
         manager.on_battery_update(lambda ip, pct, charging: SIG.battery.emit({"pct": pct, "charging": charging}))
+        manager.on_rssi_changed(lambda rssi: self._panel.update_signal(rssi))
+        manager.on_resources_changed(lambda data: SIG.resources.emit(data))
 
         self._window = MainWindow(self._, self._ai_modules)
         self._build_tray()
