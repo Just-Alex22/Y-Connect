@@ -1199,6 +1199,7 @@ class YelenaWebSocketServer:
             loop = asyncio.get_event_loop()
             loop.create_task(self._resource_loop())
             loop.create_task(self._clipboard_loop())
+            loop.create_task(self._media_loop())
             while self._running:
                 await asyncio.sleep(1)
 
@@ -1209,6 +1210,21 @@ class YelenaWebSocketServer:
             if paired:
                 data = await loop.run_in_executor(None, self._get_pc_resources)
                 await self._broadcast_to("resources", data, paired)
+            await asyncio.sleep(2)
+
+    async def _media_loop(self):
+        loop = asyncio.get_event_loop()
+        while self._running:
+            paired = self._get_paired_websockets()
+            if paired:
+                data = await loop.run_in_executor(None, self._mgr.media.get_current)
+                if data:
+                    await self._broadcast_to("media", {
+                        "title":   data.get("title",   ""),
+                        "artist":  data.get("artist",  ""),
+                        "album":   data.get("album",   ""),
+                        "playing": data.get("playing", False),
+                    }, paired)
             await asyncio.sleep(2)
 
     async def _clipboard_loop(self):
