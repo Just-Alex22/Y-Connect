@@ -81,4 +81,8 @@
     <string name="clipboard_current">CURRENT CLIPBOARD</string>
     <string name="history_label">HISTORY</string>
     <string name="accent_color">Accent color</string>
+    <string name="notif_permission_title">Notification access</string>
+    <string name="notif_permission_message">Y-Connect needs notification access to show them on your PC.</string>
+    <string name="notif_permission_open">Open settings</string>
+    <string name="notif_permission_skip">Not now</string>
 </resources>

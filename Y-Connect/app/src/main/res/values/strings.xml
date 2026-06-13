@@ -109,4 +109,8 @@
     <string name="clipboard_current">PORTAPAPELES ACTUAL</string>
     <string name="history_label">HISTORIAL</string>
     <string name="accent_color">Color de acento</string>
+    <string name="notif_permission_title">Acceso a notificaciones</string>
+    <string name="notif_permission_message">Y-Connect necesita acceso a tus notificaciones para mostrarlas en el PC.</string>
+    <string name="notif_permission_open">Abrir ajustes</string>
+    <string name="notif_permission_skip">Ahora no</string>
 </resources>

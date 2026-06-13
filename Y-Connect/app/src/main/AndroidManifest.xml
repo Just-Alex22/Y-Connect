@@ -53,11 +53,19 @@
             </intent-filter>
         </activity>
 
-        <!-- Servicio que mantiene WebSocket vivo en background -->
         <service
             android:name=".YelenaService"
             android:foregroundServiceType="connectedDevice"
             android:exported="false"/>
+
+        <service
+            android:name=".YelenaNotificationListener"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService"/>
+            </intent-filter>
+        </service>
 
     </application>
 </manifest>
