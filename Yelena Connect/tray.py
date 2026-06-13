@@ -1045,7 +1045,7 @@ class MediaTab(QWidget):
     def update_media(self, m):
         t = m.get("title",""); self._title.setText(t or "--")
         self._artist.setText(m.get("artist","--"))
-        icon = "media-playback-pause-symbolic" if m.get("playing") \
+        icon = "media-playback-pause-symbolic" if m.get("playing")\
                else "media-playback-start-symbolic"
         self._play.setIcon(_themed_icon(icon, QSize(24,24)))
 
@@ -1620,6 +1620,7 @@ class YelenaTray:
         manager.on_wifi_disconnected(self._cb_wifi_disconnected)
         manager.on_android_found(self._cb_found)
         manager.on_pair_request(self._cb_pair_request)
+        manager.on_battery_update(lambda ip, pct, charging: SIG.battery.emit({"pct": pct, "charging": charging}))
 
         self._window = MainWindow(self._, self._ai_modules)
         self._build_tray()

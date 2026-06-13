@@ -131,6 +131,7 @@ object YelenaWebSocket {
     fun setBrightness(v: Int)              = sendJson("set_brightness",         """{"value":$v}""")
     fun sendPresentationCmd(a: String)     = sendJson("presentation",           """{"action":"$a"}""")
     fun sendWifiSignal(rssi: Int)           = sendJson("wifi_signal",            """{"rssi":$rssi}""")
+    fun sendBattery(pct: Int, charging: Boolean) = sendJson("battery",             """{"pct":$pct,"charging":$charging}""")
 
     private fun handleMessage(raw: String) {
         try {

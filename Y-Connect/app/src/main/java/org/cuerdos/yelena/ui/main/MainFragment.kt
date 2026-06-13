@@ -1,7 +1,10 @@
 package org.cuerdos.yelena.ui.main
 
 import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.net.wifi.WifiManager
+import android.os.BatteryManager
 import android.os.Bundle
 import android.view.*
 import androidx.core.view.GravityCompat
@@ -112,13 +115,29 @@ class MainFragment : Fragment() {
             YelenaWebSocket.pcMedia.collectLatest { updateMedia(it) }
         }
 
-        // Enviar señal WiFi al PC cada 5s para el ícono del tray
         viewLifecycleOwner.lifecycleScope.launch {
             while (true) {
                 sendWifiSignal()
+                sendBattery()
                 delay(5_000)
             }
         }
+    }
+
+    private fun sendBattery() {
+        try {
+            val intent = requireContext().registerReceiver(
+                null, IntentFilter(Intent.ACTION_BATTERY_CHANGED)
+            ) ?: return
+            val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
+            val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
+            if (level < 0 || scale <= 0) return
+            val pct = (level * 100 / scale)
+            val status = intent.getIntExtra(BatteryManager.EXTRA_STATUS, -1)
+            val charging = status == BatteryManager.BATTERY_STATUS_CHARGING
+                        || status == BatteryManager.BATTERY_STATUS_FULL
+            YelenaWebSocket.sendBattery(pct, charging)
+        } catch (_: Exception) {}
     }
 
     private fun sendWifiSignal() {

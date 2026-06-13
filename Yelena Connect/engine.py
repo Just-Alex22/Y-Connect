@@ -442,7 +442,7 @@ class MediaController:
                 )
                 if m:
                     val = m.group(1).strip().strip(",").strip()
-                    if val and val.lower() not in ("null", "none", "") \
+                    if val and val.lower() not in ("null", "none", "")\
                             and not val.startswith("size="):
                         result[field] = val[:80]
 
@@ -1076,6 +1076,7 @@ class YelenaWebSocketServer:
             "set_brightness":        self._h_set_brightness,
             "get_brightness":        self._h_get_brightness,
             "send_notification":     self._h_send_notification,
+            "battery":               self._h_battery,
             "presentation":          self._h_presentation,
             "get_clipboard_history": self._h_clipboard_history,
         }
@@ -1502,6 +1503,16 @@ class YelenaWebSocketServer:
         val = self._get_brightness()
         await self._send(ws, "brightness", {"value": val})
 
+    async def _h_battery(self, ws, ip: str, payload: dict):
+        pct      = payload.get("pct", -1)
+        charging = payload.get("charging", False)
+        with self._client_info_lock:
+            info = self._client_info.get(ip)
+            if info:
+                info["battery_pct"]      = pct
+                info["battery_charging"] = charging
+        self._mgr.broadcast_battery(ip, pct, charging)
+
     async def _h_send_notification(self, ws, ip: str, payload: dict):
         title = payload.get("title", "")
         body = payload.get("body", "")
@@ -1763,6 +1774,7 @@ class ConnectionManager:
         self.media = MediaController()
         self.phone = PhoneController()
 
+        self._on_battery_cbs: list[Callable] = []
         self.ws_server = YelenaWebSocketServer(self)
         self.discovery = YelenaDiscovery(ws_port=YelenaWebSocketServer.WS_PORT)
 
@@ -1841,6 +1853,16 @@ class ConnectionManager:
 
     def get_android_devices(self) -> list[dict]:
         return self.discovery.discovered_devices
+
+    def broadcast_battery(self, ip: str, pct: int, charging: bool):
+        for cb in self._on_battery_cbs:
+            try:
+                cb(ip, pct, charging)
+            except Exception:
+                pass
+
+    def on_battery_update(self, cb: Callable):
+        self._on_battery_cbs.append(cb)
 
     def on_wifi_connected(self, cb: Callable):
         self.ws_server.on_pair_accepted(cb)
