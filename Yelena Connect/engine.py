@@ -1299,6 +1299,9 @@ class YelenaWebSocketServer:
                             "album":   media.get("album",   ""),
                             "playing": media.get("playing", False),
                         })
+                    vol = await loop.run_in_executor(None, self._get_pc_volume)
+                    if vol is not None:
+                        await self._send(websocket, "pc_volume", {"level": vol})
                     clip = self._clipboard.get()
                     if clip:
                         await self._send(websocket, "clipboard", {"text": clip})
@@ -1359,6 +1362,9 @@ class YelenaWebSocketServer:
                     "album":   media.get("album",   ""),
                     "playing": media.get("playing", False),
                 })
+            vol = await loop.run_in_executor(None, self._get_pc_volume)
+            if vol is not None and not ws.closed:
+                await self._send(ws, "pc_volume", {"level": vol})
             clip = self._clipboard.get()
             if clip and not ws.closed:
                 await self._send(ws, "clipboard", {"text": clip})
@@ -1454,11 +1460,26 @@ class YelenaWebSocketServer:
             cmd = pc_cmd_map.get(action)
             if cmd:
                 try:
-                    subprocess.Popen(
+                    subprocess.run(
                         cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
                     )
+                    if action in ("vol_up", "vol_down"):
+                        vol = self._get_pc_volume()
+                        if vol is not None:
+                            await self._send(ws, "pc_volume", {"level": vol})
                 except Exception as e:
                     print(f"[ws] media cmd error: {e}")
+
+    def _get_pc_volume(self) -> Optional[int]:
+        try:
+            out = subprocess.check_output(
+                ["pactl", "get-sink-volume", "@DEFAULT_SINK@"],
+                stderr=subprocess.DEVNULL, text=True
+            )
+            m = re.search(r"(\d+)%", out)
+            return int(m.group(1)) if m else None
+        except Exception:
+            return None
 
     async def _h_terminal(self, ws, ip: str, payload: dict):
         cmd = payload.get("command", "")

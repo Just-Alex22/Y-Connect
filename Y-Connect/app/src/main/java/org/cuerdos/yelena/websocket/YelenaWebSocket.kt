@@ -39,6 +39,7 @@ object YelenaWebSocket {
     val pcResources        = MutableStateFlow(PcResources())
     val pcMedia            = MutableStateFlow(PcMedia())
     val pcNotifications    = MutableStateFlow<List<PcNotification>>(emptyList())
+    val pcVolume           = MutableStateFlow<Int>(-1)
     val phoneNotifications = MutableStateFlow<List<PcNotification>>(emptyList())
     val wifiSignal          = MutableStateFlow(-1)
     val terminalOutput     = MutableSharedFlow<TerminalOutput>(replay = 1)
@@ -98,6 +99,7 @@ object YelenaWebSocket {
         pcResources.value        = PcResources()
         pcMedia.value            = PcMedia()
         pcNotifications.value    = emptyList()
+        pcVolume.value           = -1
         phoneNotifications.value = emptyList()
     }
 
@@ -151,6 +153,10 @@ object YelenaWebSocket {
                 "resources"           -> pcResources.value          = json.decodeFromString(msg.payload)
                 "media"               -> pcMedia.value              = json.decodeFromString(msg.payload)
                 "notifications"       -> pcNotifications.value      = json.decodeFromString(msg.payload)
+                "pc_volume"           -> {
+                    val lvl = org.json.JSONObject(msg.payload).optInt("level", -1)
+                    if (lvl >= 0) pcVolume.value = lvl
+                }
                 "phone_notifications" -> phoneNotifications.value   = json.decodeFromString(msg.payload)
                 "terminal_output"     -> scope.launch { terminalOutput.emit(json.decodeFromString(msg.payload)) }
                 "wifi_signal_ack"     -> { /* ignorar */ }
