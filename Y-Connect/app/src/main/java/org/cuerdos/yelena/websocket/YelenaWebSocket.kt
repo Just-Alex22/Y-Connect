@@ -134,6 +134,9 @@ object YelenaWebSocket {
     fun sendPresentationCmd(a: String)     = sendJson("presentation",           """{"action":"$a"}""")
     fun sendWifiSignal(rssi: Int)           = sendJson("wifi_signal",            """{"rssi":$rssi}""")
     fun sendBattery(pct: Int, charging: Boolean) = sendJson("battery",             """{"pct":$pct,"charging":$charging}""")
+    fun sendPhoneMedia(title: String, artist: String, playing: Boolean) =
+        sendJson("phone_media", json.encodeToString(mapOf("title" to title, "artist" to artist, "playing" to playing.toString())))
+
     fun sendNotification(id: String, pkg: String, title: String, text: String) =
         sendJson("send_notification", json.encodeToString(mapOf("id" to id, "app" to pkg, "title" to title, "text" to text)))
 
@@ -153,6 +156,10 @@ object YelenaWebSocket {
                 "resources"           -> pcResources.value          = json.decodeFromString(msg.payload)
                 "media"               -> pcMedia.value              = json.decodeFromString(msg.payload)
                 "notifications"       -> pcNotifications.value      = json.decodeFromString(msg.payload)
+                "phone_media_command" -> {
+                    val act = org.json.JSONObject(msg.payload).optString("action", "")
+                    handlePhoneMediaCommand(act)
+                }
                 "pc_volume"           -> {
                     val lvl = org.json.JSONObject(msg.payload).optInt("level", -1)
                     if (lvl >= 0) pcVolume.value = lvl
@@ -168,6 +175,21 @@ object YelenaWebSocket {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Parse: ${e.message}")
+        }
+    }
+
+    private fun handlePhoneMediaCommand(action: String) {
+        scope.launch {
+            try {
+                val am = context.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager
+                when (action) {
+                    "play_pause" -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
+                    "next"       -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_NEXT))
+                    "prev"       -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS))
+                }
+            } catch (e: Exception) {
+                android.util.Log.e(TAG, "phone_media_command: ${e.message}")
+            }
         }
     }
 

@@ -1404,7 +1404,7 @@ class DevicePanel(QWidget):
         self._ctx.set_media_state(m.get("playing", False))
 
     def _on_battery(self, info):
-        self._ctx.set_phone_battery(info.get("percent", -1))
+        self._ctx.set_phone_battery(info.get("pct", info.get("percent", -1)))
 
     def _on_suggestions(self, suggestions):
         for i, btn in enumerate(self._sug_buttons):
@@ -1600,6 +1600,7 @@ class YelenaTray:
         manager.on_battery_update(lambda ip, pct, charging: SIG.battery.emit({"pct": pct, "charging": charging}))
         manager.on_rssi_changed(lambda rssi: self._panel.update_signal(rssi))
         manager.on_resources_changed(lambda data: SIG.resources.emit(data))
+        manager.on_phone_media_changed(lambda data: SIG.media.emit(data))
 
         self._window = MainWindow(self._, self._ai_modules)
         self._build_tray()

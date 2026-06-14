@@ -1061,6 +1061,8 @@ class YelenaWebSocketServer:
             "pair_response":         self._h_pair_response,
             "wifi_signal":           self._h_wifi_signal,
             "media_command":         self._h_media_command,
+            "phone_media_command":   self._h_phone_media_command,
+            "phone_media":           self._h_phone_media,
             "terminal":              self._h_terminal,
             "clipboard_set":         self._h_clipboard_set,
             "file_send":             self._h_file_send,
@@ -1436,6 +1438,13 @@ class YelenaWebSocketServer:
         if isinstance(rssi, (int, float)):
             self._last_wifi_rssi = int(rssi)
             self._mgr.on_rssi_update(int(rssi))
+
+    async def _h_phone_media(self, ws, ip: str, payload: dict):
+        self._mgr.on_phone_media_update(payload)
+
+    async def _h_phone_media_command(self, ws, ip: str, payload: dict):
+        action = payload.get("action", "")
+        self._broadcast("phone_media_command", {"action": action})
 
     async def _h_media_command(self, ws, ip: str, payload: dict):
         action = payload.get("action", "")
@@ -1833,6 +1842,7 @@ class ConnectionManager:
         self._on_battery_cbs: list[Callable] = []
         self._on_rssi_cbs: list[Callable] = []
         self._on_resources_cbs: list[Callable] = []
+        self._on_phone_media_cbs: list[Callable] = []
         self.ws_server = YelenaWebSocketServer(self)
         self.discovery = YelenaDiscovery(ws_port=YelenaWebSocketServer.WS_PORT)
 
@@ -1941,6 +1951,16 @@ class ConnectionManager:
 
     def on_resources_changed(self, cb: Callable):
         self._on_resources_cbs.append(cb)
+
+    def on_phone_media_update(self, data: dict):
+        for cb in self._on_phone_media_cbs:
+            try:
+                cb(data)
+            except Exception:
+                pass
+
+    def on_phone_media_changed(self, cb: Callable):
+        self._on_phone_media_cbs.append(cb)
 
     def on_wifi_connected(self, cb: Callable):
         self.ws_server.on_pair_accepted(cb)

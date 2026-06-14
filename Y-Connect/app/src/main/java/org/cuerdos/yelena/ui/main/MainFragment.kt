@@ -1,8 +1,11 @@
-package org.cuerdos.yelena.ui.main
+}package org.cuerdos.yelena.ui.main
 
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.media.MediaMetadata
+import android.media.session.MediaSessionManager
+import android.media.session.PlaybackState
 import android.net.wifi.WifiManager
 import android.os.BatteryManager
 import android.os.Bundle
@@ -119,9 +122,25 @@ class MainFragment : Fragment() {
             while (true) {
                 sendWifiSignal()
                 sendBattery()
+                sendPhoneMedia()
                 delay(5_000)
             }
         }
+    }
+
+    private fun sendPhoneMedia() {
+        try {
+            val msm = requireContext().getSystemService(Context.MEDIA_SESSION_SERVICE) as MediaSessionManager
+            val cn = android.content.ComponentName(requireContext(), org.cuerdos.yelena.YelenaNotificationListener::class.java)
+            val controllers = msm.getActiveSessions(cn)
+            val ctrl = controllers.firstOrNull() ?: return
+            val meta  = ctrl.metadata
+            val state = ctrl.playbackState
+            val title   = meta?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: ""
+            val artist  = meta?.getString(MediaMetadata.METADATA_KEY_ARTIST) ?: ""
+            val playing = state?.state == PlaybackState.STATE_PLAYING
+            YelenaWebSocket.sendPhoneMedia(title, artist, playing)
+        } catch (_: Exception) {}
     }
 
     private fun sendBattery() {
