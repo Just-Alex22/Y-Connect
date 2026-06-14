@@ -916,21 +916,6 @@ class StatusTab(QWidget):
         super().__init__()
         self._ = tr; self._prefs = prefs
         v = QVBoxLayout(self); v.setContentsMargins(24,24,24,24); v.setSpacing(16)
-        def res_row(label):
-            h = QHBoxLayout()
-            lbl = _lbl(label, 12); lbl.setFixedWidth(110)
-            bar = QProgressBar(); bar.setRange(0,100); bar.setTextVisible(False); bar.setFixedHeight(6)
-            val = _lbl("--", 12, dim=True); val.setFixedWidth(150)
-            h.addWidget(lbl); h.addWidget(bar); h.addWidget(val); h.addStretch()
-            return h, bar, val
-        r1, self._cpu_bar, self._cpu_val = res_row(tr("cpu"))
-        r2, self._ram_bar, self._ram_val = res_row(tr("ram"))
-        r3, self._dsk_bar, self._dsk_val = res_row(tr("disk"))
-        for r in (r1,r2,r3): v.addLayout(r)
-        up_h = QHBoxLayout(); up_h.addWidget(_lbl(tr("uptime"), 12))
-        self._up = _lbl("--", 12, dim=True)
-        up_h.addWidget(self._up); up_h.addStretch(); v.addLayout(up_h)
-        v.addWidget(_sep())
         bat_h = QHBoxLayout()
         self._bat_icon_lbl = QLabel()
         self._bat_icon_lbl.setPixmap(_themed_pixmap("battery-full-symbolic", QSize(18,18)))
@@ -986,23 +971,15 @@ class StatusTab(QWidget):
                 SIG.toast.emit("Battery", f"Phone battery at {pct}%")
 
     def update_resources(self, r):
-        self._cpu_bar.setValue(int(r.get("cpuPercent",0)))
-        self._cpu_val.setText(f"{r.get('cpuPercent',0):.0f}%")
-        self._ram_bar.setValue(int(r.get("ramPercent",0)))
-        self._ram_val.setText(f"{r.get('ramUsedGb',0):.1f}/{r.get('ramTotalGb',0):.1f} GB")
-        self._dsk_bar.setValue(int(r.get("diskPercent",0)))
-        self._dsk_val.setText(f"{r.get('diskUsedGb',0):.1f}/{r.get('diskTotalGb',0):.1f} GB")
-        s = int(r.get("uptimeSeconds",0))
-        self._up.setText(f"{s//3600}h {(s%3600)//60}m")
+        pass
 
     def update_signal(self, rssi):
         if rssi == -1: self._sig.setText("")
         else: self._sig.setText(f"{_rssi_bars(rssi)}  {rssi} dBm")
 
     def reset(self):
-        for bar in (self._cpu_bar, self._ram_bar, self._dsk_bar, self._bat_bar): bar.setValue(0)
-        for lbl in (self._cpu_val, self._ram_val, self._dsk_val, self._up,
-                    self._bat_val, self._net_lbl, self._reconn_lbl): lbl.setText("--")
+        self._bat_bar.setValue(0)
+        for lbl in (self._bat_val, self._net_lbl, self._reconn_lbl): lbl.setText("--")
         self._sig.setText("")
 
 class MediaTab(QWidget):
