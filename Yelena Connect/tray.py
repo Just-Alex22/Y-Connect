@@ -11,13 +11,13 @@ from PySide6.QtWidgets import (
     QFileDialog, QStackedWidget, QListWidget, QListWidgetItem,
     QFrame, QScrollArea, QProgressBar, QMessageBox, QTextEdit,
     QSizePolicy, QToolButton, QGridLayout, QLineEdit, QComboBox,
-    QCheckBox, QSpinBox, QSlider, QToolTip, QGroupBox
+    QCheckBox, QSpinBox, QSlider, QToolTip, QGroupBox, QDialog
 )
 from PySide6.QtGui import (
     QIcon, QPixmap, QAction, QCloseEvent, QPalette, QColor, QFont,
-    QKeySequence, QShortcut, QTextCursor, QPainter
+    QKeySequence, QShortcut, QTextCursor, QPainter, QDesktopServices
 )
-from PySide6.QtCore import Qt, QTimer, Signal, QObject, QSize, QElapsedTimer
+from PySide6.QtCore import Qt, QTimer, Signal, QObject, QSize, QElapsedTimer, QUrl
 
 from engine import manager
 
@@ -66,7 +66,7 @@ STRINGS = {
     "instructions":"1. Abre Y-Connect en Android\n2. Toca Conectar\n3. Escanea el QR",
     "send_file":"Enviar archivo","no_media":"Sin reproduccion",
     "no_notifs":"Sin notificaciones","about":"Acerca de","quit":"Salir","show":"Mostrar",
-    "about_text":"Y-Connect v2.0\n 2026 CuerdOS\nLicencia GPL 3.0",
+    "about_version":"Versión","about_license":"Licencia","about_authors":"Autores","about_requires":"Requiere","about_project":"Proyecto","about_text":"Y-Connect v2.0\n 2026 CuerdOS\nLicencia GPL 3.0","visit_website":"Visitar página web","btn_close":"Cerrar",
     "pc_media":"Reproduccion del PC","phone_media":"Reproduccion del telefono",
     "phone_vol":"Volumen","pc_notifs":"Notificaciones del PC",
     "phone_notifs":"Notificaciones del telefono","files":"Archivos",
@@ -108,7 +108,7 @@ STRINGS = {
     "instructions":"1. Open Y-Connect on Android\n2. Tap Connect\n3. Scan the QR",
     "send_file":"Send file","no_media":"No playback",
     "no_notifs":"No notifications","about":"About","quit":"Quit","show":"Show",
-    "about_text":"Y-Connect v2.0\n 2026 CuerdOS\nGPL 3.0 License",
+    "about_version":"Version","about_license":"License","about_authors":"Authors","about_requires":"Requires","about_project":"Project","about_text":"Y-Connect v2.0\n 2026 CuerdOS\nGPL 3.0 License","visit_website":"Visit website","btn_close":"Close",
     "pc_media":"PC Playback","phone_media":"Phone Playback","phone_volume":"Phone Volume","phone_volume":"Phone Volume",
     "phone_vol":"Volume","pc_notifs":"PC Notifications",
     "phone_notifs":"Phone Notifications","files":"Files",
@@ -1544,14 +1544,56 @@ class MainWindow(QMainWindow):
         elif action == "quit": QApplication.quit()
 
     def _on_about(self):
-        box = QMessageBox()
-        box.setWindowTitle(self._("about"))
-        box.setText("<b>Y-Connect v2.0</b>")
-        box.setInformativeText(self._("about_text"))
+        d = QDialog()
+        d.setWindowTitle(self._("about"))
+        d.setFixedWidth(420)
+        outer = QVBoxLayout(d); outer.setContentsMargins(0,0,0,0); outer.setSpacing(0)
+        header = QWidget(); header.setStyleSheet("background:#1a1a1a;")
+        hl = QVBoxLayout(header); hl.setContentsMargins(0,24,0,20); hl.setSpacing(0)
+        hl.setAlignment(Qt.AlignHCenter)
         if LOGO_PATH.exists():
-            box.setIconPixmap(QPixmap(str(LOGO_PATH)).scaled(
-                64,64,Qt.KeepAspectRatio,Qt.SmoothTransformation))
-        box.exec()
+            logo_lbl = QLabel()
+            logo_lbl.setPixmap(QPixmap(str(LOGO_PATH)).scaled(72,72,Qt.KeepAspectRatio,Qt.SmoothTransformation))
+            logo_lbl.setAlignment(Qt.AlignCenter)
+            hl.addWidget(logo_lbl)
+        hl.addSpacing(6)
+        name_lbl = QLabel("Y-Connect"); name_lbl.setAlignment(Qt.AlignCenter)
+        name_lbl.setStyleSheet("font-size:18px;font-weight:bold;color:#ffffff;background:transparent;")
+        hl.addWidget(name_lbl)
+        ver_lbl = QLabel("v2.0  ·  CuerdOS"); ver_lbl.setAlignment(Qt.AlignCenter)
+        ver_lbl.setStyleSheet("font-size:11px;color:#888888;background:transparent;margin-top:2px;")
+        hl.addWidget(ver_lbl)
+        outer.addWidget(header); outer.addWidget(_sep())
+        body = QWidget(); body.setStyleSheet("background:#1e1e1e;")
+        bl = QVBoxLayout(body); bl.setContentsMargins(0,0,0,0); bl.setSpacing(0)
+        rows = [
+            (self._("about_version","Version"),  "2.0"),
+            (self._("about_license","License"),  "GPL 3.0"),
+            (self._("about_authors","Authors"),  "AlxzndrXP / GatoVerde95"),
+            (self._("about_requires","Requires"),"Python 3.10+  ·  GTK3"),
+            (self._("about_project","Project"),  "CuerdOS"),
+        ]
+        for i,(label,value) in enumerate(rows):
+            row_w = QWidget()
+            row_w.setStyleSheet("background:#2a2a2a;border-radius:0px;" if i%2==0 else "background:#1e1e1e;")
+            rl = QHBoxLayout(row_w); rl.setContentsMargins(24,10,24,10); rl.setSpacing(8)
+            ll = QLabel(label); ll.setStyleSheet("color:#a3a0b0;font-size:11px;font-weight:bold;min-width:90px;background:transparent;")
+            lv = QLabel(value); lv.setStyleSheet("color:#d0d0d0;font-size:11px;background:transparent;")
+            lv.setWordWrap(True)
+            rl.addWidget(ll); rl.addWidget(lv,1)
+            bl.addWidget(row_w)
+        outer.addWidget(body); outer.addWidget(_sep())
+        footer_w = QWidget(); footer_w.setFixedHeight(52); footer_w.setStyleSheet("background:#1a1a1a;")
+        fl = QHBoxLayout(footer_w); fl.setContentsMargins(24,0,24,0); fl.setSpacing(8); fl.addStretch()
+        btn_web = QPushButton(self._("visit_website","Visit website"))
+        btn_web.setCursor(Qt.PointingHandCursor)
+        btn_web.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://cuerdos.github.io")))
+        btn_close = QPushButton(self._("btn_close","Close"))
+        btn_close.setCursor(Qt.PointingHandCursor)
+        btn_close.clicked.connect(d.accept)
+        fl.addWidget(btn_web); fl.addWidget(btn_close)
+        outer.addWidget(footer_w)
+        d.exec()
 
     def closeEvent(self, event): event.ignore(); self.hide()
 
@@ -1690,14 +1732,56 @@ class YelenaTray:
         if status == "ok" and self._reconnector.active: self._reconnector.stop()
 
     def _on_about(self):
-        box = QMessageBox()
-        box.setWindowTitle(self._("about"))
-        box.setText("<b>Y-Connect v2.0</b>")
-        box.setInformativeText(self._("about_text"))
+        d = QDialog()
+        d.setWindowTitle(self._("about"))
+        d.setFixedWidth(420)
+        outer = QVBoxLayout(d); outer.setContentsMargins(0,0,0,0); outer.setSpacing(0)
+        header = QWidget(); header.setStyleSheet("background:#1a1a1a;")
+        hl = QVBoxLayout(header); hl.setContentsMargins(0,24,0,20); hl.setSpacing(0)
+        hl.setAlignment(Qt.AlignHCenter)
         if LOGO_PATH.exists():
-            box.setIconPixmap(QPixmap(str(LOGO_PATH)).scaled(
-                64,64,Qt.KeepAspectRatio,Qt.SmoothTransformation))
-        box.exec()
+            logo_lbl = QLabel()
+            logo_lbl.setPixmap(QPixmap(str(LOGO_PATH)).scaled(72,72,Qt.KeepAspectRatio,Qt.SmoothTransformation))
+            logo_lbl.setAlignment(Qt.AlignCenter)
+            hl.addWidget(logo_lbl)
+        hl.addSpacing(6)
+        name_lbl = QLabel("Y-Connect"); name_lbl.setAlignment(Qt.AlignCenter)
+        name_lbl.setStyleSheet("font-size:18px;font-weight:bold;color:#ffffff;background:transparent;")
+        hl.addWidget(name_lbl)
+        ver_lbl = QLabel("v2.0  ·  CuerdOS"); ver_lbl.setAlignment(Qt.AlignCenter)
+        ver_lbl.setStyleSheet("font-size:11px;color:#888888;background:transparent;margin-top:2px;")
+        hl.addWidget(ver_lbl)
+        outer.addWidget(header); outer.addWidget(_sep())
+        body = QWidget(); body.setStyleSheet("background:#1e1e1e;")
+        bl = QVBoxLayout(body); bl.setContentsMargins(0,0,0,0); bl.setSpacing(0)
+        rows = [
+            (self._("about_version","Version"),  "2.0"),
+            (self._("about_license","License"),  "GPL 3.0"),
+            (self._("about_authors","Authors"),  "AlxzndrXP / GatoVerde95"),
+            (self._("about_requires","Requires"),"Python 3.10+  ·  GTK3"),
+            (self._("about_project","Project"),  "CuerdOS"),
+        ]
+        for i,(label,value) in enumerate(rows):
+            row_w = QWidget()
+            row_w.setStyleSheet("background:#2a2a2a;border-radius:0px;" if i%2==0 else "background:#1e1e1e;")
+            rl = QHBoxLayout(row_w); rl.setContentsMargins(24,10,24,10); rl.setSpacing(8)
+            ll = QLabel(label); ll.setStyleSheet("color:#a3a0b0;font-size:11px;font-weight:bold;min-width:90px;background:transparent;")
+            lv = QLabel(value); lv.setStyleSheet("color:#d0d0d0;font-size:11px;background:transparent;")
+            lv.setWordWrap(True)
+            rl.addWidget(ll); rl.addWidget(lv,1)
+            bl.addWidget(row_w)
+        outer.addWidget(body); outer.addWidget(_sep())
+        footer_w = QWidget(); footer_w.setFixedHeight(52); footer_w.setStyleSheet("background:#1a1a1a;")
+        fl = QHBoxLayout(footer_w); fl.setContentsMargins(24,0,24,0); fl.setSpacing(8); fl.addStretch()
+        btn_web = QPushButton(self._("visit_website","Visit website"))
+        btn_web.setCursor(Qt.PointingHandCursor)
+        btn_web.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://cuerdos.github.io")))
+        btn_close = QPushButton(self._("btn_close","Close"))
+        btn_close.setCursor(Qt.PointingHandCursor)
+        btn_close.clicked.connect(d.accept)
+        fl.addWidget(btn_web); fl.addWidget(btn_close)
+        outer.addWidget(footer_w)
+        d.exec()
 
     def _on_quit(self):
         self._reconnector.stop()

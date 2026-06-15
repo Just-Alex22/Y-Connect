@@ -1,19 +1,15 @@
 package org.cuerdos.yelena.ui
 
 import android.content.ClipboardManager
-import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.provider.Settings
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.color.MaterialColors
 import org.cuerdos.yelena.R
-import org.cuerdos.yelena.YelenaNotificationListener
 import org.cuerdos.yelena.YelenaService
 import org.cuerdos.yelena.databinding.ActivityMainBinding
 import org.cuerdos.yelena.websocket.YelenaWebSocket
@@ -31,6 +27,17 @@ class MainActivity : AppCompatActivity() {
             prefs.getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         )
 
+        val savedHex = prefs.getString("accent_color", "#5a7a22") ?: "#5a7a22"
+        try {
+            val color = Color.parseColor(savedHex)
+            val csl   = ColorStateList.valueOf(color)
+            window.statusBarColor = color
+            window.navigationBarColor = color
+            (theme as? android.content.res.Resources.Theme)?.let { t ->
+                val attrs = intArrayOf(android.R.attr.colorPrimary)
+            }
+        } catch (_: Exception) {}
+
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         YelenaWebSocket.appContext = applicationContext
@@ -46,17 +53,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
         cm.addPrimaryClipChangedListener(clipboardListener!!)
-
-        if (!isNotificationListenerEnabled()) {
-            AlertDialog.Builder(this)
-                .setTitle(getString(R.string.notif_permission_title))
-                .setMessage(getString(R.string.notif_permission_message))
-                .setPositiveButton(getString(R.string.notif_permission_open)) { _, _ ->
-                    startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
-                }
-                .setNegativeButton(getString(R.string.notif_permission_skip), null)
-                .show()
-        }
 
         val ip   = prefs.getString("last_ip", null)
         val port = prefs.getInt("last_port", YelenaWebSocket.WS_PORT)
@@ -85,18 +81,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isNotificationListenerEnabled(): Boolean {
-        val cn = ComponentName(this, YelenaNotificationListener::class.java)
-        val flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
-        return flat != null && flat.contains(cn.flattenToString())
-    }
-
     fun applyAccentColor(hex: String) {
-        // Guardar y aplicar el color de acento en runtime
-        // Los botones y switches se actualizan via recreate
         try {
-            val color = Color.parseColor(hex)
-            // Actualizar el tema en runtime requiere recrear la activity
+            val prefs = getSharedPreferences("yelena_prefs", Context.MODE_PRIVATE)
+            prefs.edit().putString("accent_color", hex).apply()
             recreate()
         } catch (_: Exception) {}
     }
