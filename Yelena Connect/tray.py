@@ -521,7 +521,7 @@ class ContextEngine:
         if not connected: return sugs
         if self._phone_battery is not None and self._phone_battery <= self._battery_low_threshold:
             sugs.append({"icon": "battery-caution-symbolic",
-                         "text": f"Phone battery at {self._phone_battery}%",
+                         "text": STRINGS.get(os.environ.get("_yconnect_lang","en"), STRINGS["en"]).get("sug_battery_low", "Phone battery low") + f" ({self._phone_battery}%)",
                          "action": "battery_alert"})
         if self._recent_files:
             recent = self._recent_files[0]
@@ -968,7 +968,8 @@ class StatusTab(QWidget):
                 WARN if pct <= 15 else FG))
             threshold = self._prefs.get("battery_alert_threshold", 15)
             if pct <= threshold and not charging:
-                SIG.toast.emit("Battery", f"Phone battery at {pct}%")
+                _msg = STRINGS.get(os.environ.get("_yconnect_lang","en"), STRINGS["en"]).get("toast_battery", "Phone battery: {}%").format(pct)
+                SIG.toast.emit(STRINGS.get(os.environ.get("_yconnect_lang","en"), STRINGS["en"]).get("battery","Battery"), _msg)
 
     def update_resources(self, r):
         pass
@@ -1400,7 +1401,9 @@ class DevicePanel(QWidget):
         self._ctx.set_media_state(m.get("playing", False))
 
     def _on_battery(self, info):
-        self._ctx.set_phone_battery(info.get("pct", info.get("percent", -1)))
+        pct = info.get("pct", info.get("percent", -1))
+        if pct >= 0:
+            self._ctx.set_phone_battery(pct)
 
     def _on_suggestions(self, suggestions):
         for i, btn in enumerate(self._sug_buttons):
