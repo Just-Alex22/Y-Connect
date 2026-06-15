@@ -109,7 +109,7 @@ STRINGS = {
     "send_file":"Send file","no_media":"No playback",
     "no_notifs":"No notifications","about":"About","quit":"Quit","show":"Show",
     "about_text":"Y-Connect v2.0\n 2026 CuerdOS\nGPL 3.0 License",
-    "pc_media":"PC Playback","phone_media":"Phone Playback",
+    "pc_media":"PC Playback","phone_media":"Phone Playback","phone_volume":"Phone Volume","phone_volume":"Phone Volume",
     "phone_vol":"Volume","pc_notifs":"PC Notifications",
     "phone_notifs":"Phone Notifications","files":"Files",
     "transfer_log":"Transfer history",
@@ -990,22 +990,6 @@ class MediaTab(QWidget):
         self._title  = _lbl("--", 15, bold=True, wrap=True)
         self._artist = _lbl("--", 12, dim=True)
         v.addWidget(self._title); v.addWidget(self._artist); v.addWidget(_sep())
-        v.addWidget(_lbl(tr("pc_media"), 11, dim=True))
-        pc_row = QHBoxLayout()
-        self._prev  = _media_btn("media-skip-backward-symbolic", 40)
-        self._play  = _media_btn("media-playback-start-symbolic", 48)
-        self._next  = _media_btn("media-skip-forward-symbolic", 40)
-        self._vdown = _media_btn("audio-volume-low-symbolic", 36)
-        self._vup   = _media_btn("audio-volume-high-symbolic", 36)
-        for b in (self._prev, self._play, self._next, self._vdown, self._vup):
-            b.setEnabled(False); pc_row.addWidget(b)
-        pc_row.addStretch(); v.addLayout(pc_row)
-        self._prev.clicked.connect(lambda: _ws_send("media_command",{"action":"prev"}))
-        self._play.clicked.connect(lambda: _ws_send("media_command",{"action":"play_pause"}))
-        self._next.clicked.connect(lambda: _ws_send("media_command",{"action":"next"}))
-        self._vdown.clicked.connect(lambda: _ws_send("media_command",{"action":"vol_down"}))
-        self._vup.clicked.connect(lambda: _ws_send("media_command",{"action":"vol_up"}))
-        v.addWidget(_sep())
         v.addWidget(_lbl(tr("phone_media"), 11, dim=True))
         ph_row = QHBoxLayout()
         self._pp = _media_btn("media-skip-backward-symbolic", 40)
@@ -1017,6 +1001,18 @@ class MediaTab(QWidget):
         self._pp.clicked.connect(lambda: _ws_send("phone_media_command",{"action":"prev"}))
         self._ppl.clicked.connect(lambda: _ws_send("phone_media_command",{"action":"play_pause"}))
         self._pn.clicked.connect(lambda: _ws_send("phone_media_command",{"action":"next"}))
+        v.addWidget(_sep())
+        v.addWidget(_lbl(tr("phone_volume"), 11, dim=True))
+        vol_row = QHBoxLayout()
+        self._pvdown = _media_btn("audio-volume-low-symbolic", 36)
+        self._pvup   = _media_btn("audio-volume-high-symbolic", 36)
+        self._pvol_lbl = _lbl("--", 12, dim=True)
+        for b in (self._pvdown, self._pvup):
+            b.setEnabled(False); vol_row.addWidget(b)
+        vol_row.addWidget(self._pvol_lbl); vol_row.addStretch()
+        v.addLayout(vol_row)
+        self._pvdown.clicked.connect(lambda: _ws_send("phone_media_command",{"action":"vol_down"}))
+        self._pvup.clicked.connect(lambda: _ws_send("phone_media_command",{"action":"vol_up"}))
         v.addStretch()
 
     def update_media(self, m):
@@ -1467,14 +1463,7 @@ class MainWindow(QMainWindow):
         lv = QVBoxLayout(left); lv.setContentsMargins(0,0,0,0); lv.setSpacing(0)
 
         lheader = QWidget(); lheader.setFixedHeight(60); lheader.setAutoFillBackground(True)
-        lhp = lheader.palette(); lhp.setColor(QPalette.Window, BG_CARD); lheader.setPalette(lhp)
-        lhh = QHBoxLayout(lheader); lhh.setContentsMargins(16,0,16,0); lhh.setSpacing(10)
-        if LOGO_PATH.exists():
-            logo = QLabel()
-            logo.setPixmap(QPixmap(str(LOGO_PATH)).scaled(26,26, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            lhh.addWidget(logo)
-        lhh.addWidget(_lbl("Y-Connect", 14, bold=True)); lhh.addStretch()
-        lv.addWidget(lheader); lv.addWidget(_sep())
+        lv.addWidget(_sep())
 
         self._dev_list = QListWidget(); self._dev_list.setFrameShape(QFrame.NoFrame)
         self._dev_list.setIconSize(QSize(24,24)); self._dev_list.setSpacing(2)
@@ -1601,6 +1590,7 @@ class YelenaTray:
         manager.on_rssi_changed(lambda rssi: self._panel.update_signal(rssi))
         manager.on_resources_changed(lambda data: SIG.resources.emit(data))
         manager.on_phone_media_changed(lambda data: SIG.media.emit(data))
+        manager.on_phone_volume_changed(lambda lvl: self._media_tab.update_phone_volume(lvl))
 
         self._window = MainWindow(self._, self._ai_modules)
         self._build_tray()

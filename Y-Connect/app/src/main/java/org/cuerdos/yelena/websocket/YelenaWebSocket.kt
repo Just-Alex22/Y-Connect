@@ -186,11 +186,26 @@ object YelenaWebSocket {
                     "play_pause" -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
                     "next"       -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_NEXT))
                     "prev"       -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_PREVIOUS))
+                    "vol_up"     -> {
+                        am.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, android.media.AudioManager.ADJUST_RAISE, 0)
+                        sendPhoneVolume(am)
+                    }
+                    "vol_down"   -> {
+                        am.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, android.media.AudioManager.ADJUST_LOWER, 0)
+                        sendPhoneVolume(am)
+                    }
                 }
             } catch (e: Exception) {
                 android.util.Log.e(TAG, "phone_media_command: ${e.message}")
             }
         }
+    }
+
+    private fun sendPhoneVolume(am: android.media.AudioManager) {
+        val cur = am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
+        val max = am.getStreamMaxVolume(android.media.AudioManager.STREAM_MUSIC)
+        val pct = if (max > 0) (cur * 100 / max) else 0
+        sendJson("phone_volume", """{"level":$pct}""")
     }
 
     private fun handlePairRequest() {
