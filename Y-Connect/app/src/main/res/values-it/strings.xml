@@ -86,7 +86,7 @@
     <string name="history_label">CRONOLOGIA</string>
     <string name="accent_color">Colore accento</string>
     <string name="notif_permission_title">Accesso notifiche</string>
-    <string name="notif_permission_message">Y-Connect necessita l'accesso alle notifiche per mostrarle sul PC.</string>
+    <string name="notif_permission_message">Y-Connect necessita l\'accesso alle notifiche per mostrarle sul PC.</string>
     <string name="notif_permission_open">Apri impostazioni</string>
     <string name="notif_permission_skip">Non ora</string>
 </resources>

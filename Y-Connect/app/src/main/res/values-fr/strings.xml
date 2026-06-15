@@ -84,9 +84,9 @@
     <string name="special_keys">Touches spéciales</string>
     <string name="clipboard_current">PRESSE-PAPIERS ACTUEL</string>
     <string name="history_label">HISTORIQUE</string>
-    <string name="accent_color">Couleur d'accent</string>
+    <string name="accent_color">Couleur d\'accent</string>
     <string name="notif_permission_title">Accès aux notifications</string>
-    <string name="notif_permission_message">Y-Connect a besoin d'accéder à vos notifications pour les afficher sur le PC.</string>
+    <string name="notif_permission_message">Y-Connect a besoin d\'accéder à vos notifications pour les afficher sur le PC.</string>
     <string name="notif_permission_open">Ouvrir les paramètres</string>
     <string name="notif_permission_skip">Pas maintenant</string>
 </resources>

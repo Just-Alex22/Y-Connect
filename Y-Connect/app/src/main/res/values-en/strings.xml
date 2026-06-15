@@ -85,7 +85,6 @@
     <string name="notif_permission_message">Y-Connect needs notification access to show them on your PC.</string>
     <string name="notif_permission_open">Open settings</string>
     <string name="notif_permission_skip">Not now</string>
-    <string name="about_version">Version</string>
     <string name="about_license">License</string>
     <string name="about_authors">Authors</string>
     <string name="about_requires">Requires</string>

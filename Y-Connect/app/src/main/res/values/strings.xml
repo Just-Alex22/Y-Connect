@@ -113,7 +113,6 @@
     <string name="notif_permission_message">Y-Connect necesita acceso a tus notificaciones para mostrarlas en el PC.</string>
     <string name="notif_permission_open">Abrir ajustes</string>
     <string name="notif_permission_skip">Ahora no</string>
-    <string name="about_version">Versión</string>
     <string name="about_license">Licencia</string>
     <string name="about_authors">Autores</string>
     <string name="about_requires">Requiere</string>

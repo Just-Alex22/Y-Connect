@@ -1,4 +1,4 @@
-}package org.cuerdos.yelena.ui.main
+package org.cuerdos.yelena.ui.main
 
 import android.content.Context
 import android.content.Intent
