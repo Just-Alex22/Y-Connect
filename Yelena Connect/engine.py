@@ -160,7 +160,7 @@ class ResourceMonitor:
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._callbacks: list[Callable] = []
-        self._interval = 3.0
+        self._interval = 1.0
 
     def set_serial(self, serial: str):
         self._serial = serial
@@ -302,7 +302,7 @@ class NotificationMonitor:
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._callbacks: list[Callable] = []
-        self._interval = 3.0
+        self._interval = 1.0
 
     def set_serial(self, serial: str):
         self._serial = serial
@@ -388,7 +388,7 @@ class MediaController:
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._callbacks: list[Callable] = []
-        self._interval = 2.0
+        self._interval = 1.0
         self._current: dict = {}
         self._current_lock = threading.Lock()
 
@@ -887,7 +887,7 @@ class TrustedDeviceStore:
 class YelenaDiscovery:
 
     UDP_PORT = 1716
-    INTERVAL = 3.0
+    INTERVAL = 1.0
 
     def __init__(self, ws_port: int = 8765):
         self._ws_port = ws_port
@@ -1214,7 +1214,7 @@ class YelenaWebSocketServer:
                 data = await loop.run_in_executor(None, self._get_pc_resources)
                 await self._broadcast_to("resources", data, paired)
                 self._mgr.on_resources_update(data)
-            await asyncio.sleep(2)
+            await asyncio.sleep(1)
 
     async def _media_loop(self):
         loop = asyncio.get_event_loop()
@@ -1229,7 +1229,7 @@ class YelenaWebSocketServer:
                         "album":   data.get("album",   ""),
                         "playing": data.get("playing", False),
                     }, paired)
-            await asyncio.sleep(2)
+            await asyncio.sleep(1)
 
     async def _clipboard_loop(self):
         while self._running:

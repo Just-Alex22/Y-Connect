@@ -689,7 +689,7 @@ class ClipboardSync:
         self._last_recv = ""
         self._auto_sync = False
         self._timer = QTimer()
-        self._timer.setInterval(1500)
+        self._timer.setInterval(1000)
         self._timer.timeout.connect(self._poll_clipboard)
         self._debounce = QTimer()
         self._debounce.setSingleShot(True)
