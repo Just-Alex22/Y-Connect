@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="ThemeOverlay.Yelena.Green" parent="">
+        <item name="colorPrimary">#5a7a22</item>
+        <item name="colorControlActivated">#5a7a22</item>
+    </style>
+    <style name="ThemeOverlay.Yelena.Purple" parent="">
+        <item name="colorPrimary">#9b59b6</item>
+        <item name="colorControlActivated">#9b59b6</item>
+    </style>
+    <style name="ThemeOverlay.Yelena.Red" parent="">
+        <item name="colorPrimary">#e74c3c</item>
+        <item name="colorControlActivated">#e74c3c</item>
+    </style>
+    <style name="ThemeOverlay.Yelena.Yellow" parent="">
+        <item name="colorPrimary">#f39c12</item>
+        <item name="colorControlActivated">#f39c12</item>
+    </style>
+    <style name="ThemeOverlay.Yelena.Blue" parent="">
+        <item name="colorPrimary">#2980b9</item>
+        <item name="colorControlActivated">#2980b9</item>
+    </style>
+    <style name="ThemeOverlay.Yelena.Teal" parent="">
+        <item name="colorPrimary">#16a085</item>
+        <item name="colorControlActivated">#16a085</item>
+    </style>
+    <style name="ThemeOverlay.Yelena.Pink" parent="">
+        <item name="colorPrimary">#e91e63</item>
+        <item name="colorControlActivated">#e91e63</item>
+    </style>
+    <style name="ThemeOverlay.Yelena.Orange" parent="">
+        <item name="colorPrimary">#e67e22</item>
+        <item name="colorControlActivated">#e67e22</item>
+    </style>
+</resources>

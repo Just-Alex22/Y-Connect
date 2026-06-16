@@ -7,10 +7,12 @@
         <item name="colorOnSurface">@color/colorOnSurface</item>
         <item name="colorSurfaceVariant">@color/colorSurfaceVariant</item>
         <item name="android:colorBackground">@color/bg_window</item>
-        <item name="android:statusBarColor">@color/bg_view</item>
-        <item name="android:navigationBarColor">@color/bg_view</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:enforceStatusBarContrast">false</item>
+        <item name="android:enforceNavigationBarContrast">false</item>
         <item name="android:fontFamily">sans-serif</item>
         <!-- Switch: track verde oscuro, thumb blanco -->
         <item name="colorControlActivated">@color/accent_green</item>

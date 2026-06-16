@@ -2,14 +2,18 @@ package org.cuerdos.yelena.ui
 
 import android.content.ClipboardManager
 import android.content.Context
-import android.content.res.ColorStateList
+import android.content.ComponentName
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.provider.Settings
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.WindowCompat
 import androidx.navigation.fragment.NavHostFragment
-import com.google.android.material.color.MaterialColors
 import org.cuerdos.yelena.R
+import org.cuerdos.yelena.YelenaNotificationListener
 import org.cuerdos.yelena.YelenaService
 import org.cuerdos.yelena.databinding.ActivityMainBinding
 import org.cuerdos.yelena.websocket.YelenaWebSocket
@@ -20,29 +24,35 @@ class MainActivity : AppCompatActivity() {
     private var clipboardListener: ClipboardManager.OnPrimaryClipChangedListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
         val prefs = getSharedPreferences("yelena_prefs", Context.MODE_PRIVATE)
         AppCompatDelegate.setDefaultNightMode(
             prefs.getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         )
 
-        val savedHex = prefs.getString("accent_color", "#5a7a22") ?: "#5a7a22"
-        try {
-            val color = Color.parseColor(savedHex)
-            val csl   = ColorStateList.valueOf(color)
-            window.statusBarColor = color
-            window.navigationBarColor = color
-            (theme as? android.content.res.Resources.Theme)?.let { t ->
-                val attrs = intArrayOf(android.R.attr.colorPrimary)
-            }
-        } catch (_: Exception) {}
+        val overlayRes = accentOverlay(prefs.getString("accent_color", "#5a7a22") ?: "#5a7a22")
+        if (overlayRes != 0) theme.applyStyle(overlayRes, true)
+
+        super.onCreate(savedInstanceState)
+
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        window.statusBarColor     = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
         YelenaWebSocket.appContext = applicationContext
 
-        // Portapapeles Android → PC
+        if (!isNotificationListenerEnabled()) {
+            AlertDialog.Builder(this)
+                .setTitle(getString(R.string.notif_permission_title))
+                .setMessage(getString(R.string.notif_permission_message))
+                .setPositiveButton(getString(R.string.notif_permission_open)) { _, _ ->
+                    startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                }
+                .setNegativeButton(getString(R.string.notif_permission_skip), null)
+                .show()
+        }
+
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboardListener = ClipboardManager.OnPrimaryClipChangedListener {
             if (YelenaWebSocket.shouldIgnoreNextClipChange()) return@OnPrimaryClipChangedListener
@@ -58,11 +68,9 @@ class MainActivity : AppCompatActivity() {
         val port = prefs.getInt("last_port", YelenaWebSocket.WS_PORT)
 
         if (!ip.isNullOrEmpty()) {
-            // Ya se conectó antes → reconectar y saltar directo al main
             if (!YelenaWebSocket.isConnectedOrConnecting()) {
                 YelenaWebSocket.connect(ip, port)
             }
-            // Cambiar startDestination a mainFragment en tiempo de ejecución
             if (savedInstanceState == null) {
                 val navHost = supportFragmentManager
                     .findFragmentById(R.id.nav_host) as NavHostFragment
@@ -71,6 +79,24 @@ class MainActivity : AppCompatActivity() {
                 navHost.navController.setGraph(graph, null)
             }
         }
+    }
+
+    private fun accentOverlay(hex: String): Int = when (hex.lowercase()) {
+        "#5a7a22" -> R.style.ThemeOverlay_Yelena_Green
+        "#9b59b6" -> R.style.ThemeOverlay_Yelena_Purple
+        "#e74c3c" -> R.style.ThemeOverlay_Yelena_Red
+        "#f39c12" -> R.style.ThemeOverlay_Yelena_Yellow
+        "#2980b9" -> R.style.ThemeOverlay_Yelena_Blue
+        "#16a085" -> R.style.ThemeOverlay_Yelena_Teal
+        "#e91e63" -> R.style.ThemeOverlay_Yelena_Pink
+        "#e67e22" -> R.style.ThemeOverlay_Yelena_Orange
+        else      -> 0
+    }
+
+    private fun isNotificationListenerEnabled(): Boolean {
+        val cn   = ComponentName(this, YelenaNotificationListener::class.java)
+        val flat = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        return flat != null && flat.contains(cn.flattenToString())
     }
 
     override fun onStart() {
