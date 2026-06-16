@@ -23,7 +23,7 @@
     <ScrollView android:id="@+id/scrollOutput" android:layout_width="match_parent"
         android:layout_height="0dp" android:layout_weight="1" android:padding="16dp" android:fillViewport="true">
         <TextView android:id="@+id/tvOutput" android:layout_width="match_parent"
-            android:layout_height="wrap_content" android:textColor="@color/accent_green"
+            android:layout_height="wrap_content" android:textColor="?attr/colorPrimary"
             android:textSize="13sp" android:fontFamily="monospace" android:lineSpacingExtra="3dp"/>
     </ScrollView>
     <View android:layout_width="match_parent" android:layout_height="1dp" android:background="@color/bg_card"/>
@@ -31,7 +31,7 @@
         android:orientation="horizontal" android:gravity="center_vertical"
         android:background="@color/bg_window" android:paddingHorizontal="16dp" android:paddingVertical="8dp">
         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:text="$ " android:textColor="@color/accent_mauve" android:textSize="14sp"
+            android:text="$ " android:textColor="?attr/colorPrimary" android:textSize="14sp"
             android:fontFamily="monospace"/>
         <EditText android:id="@+id/etCommand" android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="1" android:hint="Escribe un comando..."
@@ -40,6 +40,6 @@
             android:imeOptions="actionSend" android:inputType="text|textNoSuggestions" android:maxLines="1"/>
         <ImageButton android:id="@+id/btnSend" android:layout_width="40dp" android:layout_height="40dp"
             android:src="@drawable/ic_send" android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="@color/accent_mauve" android:contentDescription="Enviar"/>
+            android:tint="?attr/colorPrimary" android:contentDescription="Enviar"/>
     </LinearLayout>
 </LinearLayout>

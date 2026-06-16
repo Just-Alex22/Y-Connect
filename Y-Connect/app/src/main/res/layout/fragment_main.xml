@@ -153,7 +153,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:src="@drawable/ic_play"
-                                app:backgroundTint="@color/accent_green"
+                                app:backgroundTint="?attr/colorPrimary"
                                 app:tint="@color/white"
                                 app:fabSize="normal"
                                 android:layout_marginHorizontal="8dp"
@@ -211,7 +211,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="--"
-                                android:textColor="@color/accent_green"
+                                android:textColor="?attr/colorPrimary"
                                 android:textSize="13sp"
                                 android:textStyle="bold"/>
                         </LinearLayout>
@@ -276,7 +276,7 @@
                                 android:layout_width="28dp"
                                 android:layout_height="28dp"
                                 android:src="@drawable/ic_menu"
-                                android:tint="@color/accent_green"
+                                android:tint="?attr/colorPrimary"
                                 android:contentDescription="@string/keyboard_title"
                                 android:layout_marginBottom="8dp"/>
                             <TextView

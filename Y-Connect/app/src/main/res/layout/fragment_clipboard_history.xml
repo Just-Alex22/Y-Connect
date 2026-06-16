@@ -74,7 +74,7 @@
                     android:layout_height="44dp"
                     android:src="@drawable/ic_send"
                     android:background="?attr/selectableItemBackgroundBorderless"
-                    android:tint="@color/accent_green"
+                    android:tint="?attr/colorPrimary"
                     android:contentDescription="@string/btn_send"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
