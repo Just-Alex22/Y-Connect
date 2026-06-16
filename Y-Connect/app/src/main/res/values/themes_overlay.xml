@@ -2,34 +2,130 @@
 <resources>
     <style name="ThemeOverlay.Yelena.Green" parent="">
         <item name="colorPrimary">#5a7a22</item>
+        <item name="colorPrimaryVariant">#5a7a22</item>
+        <item name="colorSecondary">#5a7a22</item>
         <item name="colorControlActivated">#5a7a22</item>
+        <item name="colorControlHighlight">#335a7a22</item>
+        <item name="colorAccent">#5a7a22</item>
+        <item name="android:colorAccent">#5a7a22</item>
+        <item name="bg_accent">#5a7a22</item>
+        <item name="accent_green">#5a7a22</item>
+        <item name="accent_mauve">#5a7a22</item>
+        <item name="colorPrimaryDark">#5a7a22</item>
+        <item name="connected">#5a7a22</item>
+        <item name="green_accent">#5a7a22</item>
+        <item name="accent_green_dark">#5a7a22</item>
     </style>
     <style name="ThemeOverlay.Yelena.Purple" parent="">
         <item name="colorPrimary">#9b59b6</item>
+        <item name="colorPrimaryVariant">#9b59b6</item>
+        <item name="colorSecondary">#9b59b6</item>
         <item name="colorControlActivated">#9b59b6</item>
+        <item name="colorControlHighlight">#339b59b6</item>
+        <item name="colorAccent">#9b59b6</item>
+        <item name="android:colorAccent">#9b59b6</item>
+        <item name="bg_accent">#9b59b6</item>
+        <item name="accent_green">#9b59b6</item>
+        <item name="accent_mauve">#9b59b6</item>
+        <item name="colorPrimaryDark">#9b59b6</item>
+        <item name="connected">#9b59b6</item>
+        <item name="green_accent">#9b59b6</item>
+        <item name="accent_green_dark">#9b59b6</item>
     </style>
     <style name="ThemeOverlay.Yelena.Red" parent="">
         <item name="colorPrimary">#e74c3c</item>
+        <item name="colorPrimaryVariant">#e74c3c</item>
+        <item name="colorSecondary">#e74c3c</item>
         <item name="colorControlActivated">#e74c3c</item>
+        <item name="colorControlHighlight">#33e74c3c</item>
+        <item name="colorAccent">#e74c3c</item>
+        <item name="android:colorAccent">#e74c3c</item>
+        <item name="bg_accent">#e74c3c</item>
+        <item name="accent_green">#e74c3c</item>
+        <item name="accent_mauve">#e74c3c</item>
+        <item name="colorPrimaryDark">#e74c3c</item>
+        <item name="connected">#e74c3c</item>
+        <item name="green_accent">#e74c3c</item>
+        <item name="accent_green_dark">#e74c3c</item>
     </style>
     <style name="ThemeOverlay.Yelena.Yellow" parent="">
         <item name="colorPrimary">#f39c12</item>
+        <item name="colorPrimaryVariant">#f39c12</item>
+        <item name="colorSecondary">#f39c12</item>
         <item name="colorControlActivated">#f39c12</item>
+        <item name="colorControlHighlight">#33f39c12</item>
+        <item name="colorAccent">#f39c12</item>
+        <item name="android:colorAccent">#f39c12</item>
+        <item name="bg_accent">#f39c12</item>
+        <item name="accent_green">#f39c12</item>
+        <item name="accent_mauve">#f39c12</item>
+        <item name="colorPrimaryDark">#f39c12</item>
+        <item name="connected">#f39c12</item>
+        <item name="green_accent">#f39c12</item>
+        <item name="accent_green_dark">#f39c12</item>
     </style>
     <style name="ThemeOverlay.Yelena.Blue" parent="">
         <item name="colorPrimary">#2980b9</item>
+        <item name="colorPrimaryVariant">#2980b9</item>
+        <item name="colorSecondary">#2980b9</item>
         <item name="colorControlActivated">#2980b9</item>
+        <item name="colorControlHighlight">#332980b9</item>
+        <item name="colorAccent">#2980b9</item>
+        <item name="android:colorAccent">#2980b9</item>
+        <item name="bg_accent">#2980b9</item>
+        <item name="accent_green">#2980b9</item>
+        <item name="accent_mauve">#2980b9</item>
+        <item name="colorPrimaryDark">#2980b9</item>
+        <item name="connected">#2980b9</item>
+        <item name="green_accent">#2980b9</item>
+        <item name="accent_green_dark">#2980b9</item>
     </style>
     <style name="ThemeOverlay.Yelena.Teal" parent="">
         <item name="colorPrimary">#16a085</item>
+        <item name="colorPrimaryVariant">#16a085</item>
+        <item name="colorSecondary">#16a085</item>
         <item name="colorControlActivated">#16a085</item>
+        <item name="colorControlHighlight">#3316a085</item>
+        <item name="colorAccent">#16a085</item>
+        <item name="android:colorAccent">#16a085</item>
+        <item name="bg_accent">#16a085</item>
+        <item name="accent_green">#16a085</item>
+        <item name="accent_mauve">#16a085</item>
+        <item name="colorPrimaryDark">#16a085</item>
+        <item name="connected">#16a085</item>
+        <item name="green_accent">#16a085</item>
+        <item name="accent_green_dark">#16a085</item>
     </style>
     <style name="ThemeOverlay.Yelena.Pink" parent="">
         <item name="colorPrimary">#e91e63</item>
+        <item name="colorPrimaryVariant">#e91e63</item>
+        <item name="colorSecondary">#e91e63</item>
         <item name="colorControlActivated">#e91e63</item>
+        <item name="colorControlHighlight">#33e91e63</item>
+        <item name="colorAccent">#e91e63</item>
+        <item name="android:colorAccent">#e91e63</item>
+        <item name="bg_accent">#e91e63</item>
+        <item name="accent_green">#e91e63</item>
+        <item name="accent_mauve">#e91e63</item>
+        <item name="colorPrimaryDark">#e91e63</item>
+        <item name="connected">#e91e63</item>
+        <item name="green_accent">#e91e63</item>
+        <item name="accent_green_dark">#e91e63</item>
     </style>
     <style name="ThemeOverlay.Yelena.Orange" parent="">
         <item name="colorPrimary">#e67e22</item>
+        <item name="colorPrimaryVariant">#e67e22</item>
+        <item name="colorSecondary">#e67e22</item>
         <item name="colorControlActivated">#e67e22</item>
+        <item name="colorControlHighlight">#33e67e22</item>
+        <item name="colorAccent">#e67e22</item>
+        <item name="android:colorAccent">#e67e22</item>
+        <item name="bg_accent">#e67e22</item>
+        <item name="accent_green">#e67e22</item>
+        <item name="accent_mauve">#e67e22</item>
+        <item name="colorPrimaryDark">#e67e22</item>
+        <item name="connected">#e67e22</item>
+        <item name="green_accent">#e67e22</item>
+        <item name="accent_green_dark">#e67e22</item>
     </style>
 </resources>
