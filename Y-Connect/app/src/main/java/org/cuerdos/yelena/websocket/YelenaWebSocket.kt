@@ -181,7 +181,8 @@ object YelenaWebSocket {
     private fun handlePhoneMediaCommand(action: String) {
         scope.launch {
             try {
-                val am = context.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager
+                val ctx = appContext ?: return@launch
+                val am = ctx.getSystemService(android.content.Context.AUDIO_SERVICE) as android.media.AudioManager
                 when (action) {
                     "play_pause" -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE))
                     "next"       -> am.dispatchMediaKeyEvent(android.view.KeyEvent(android.view.KeyEvent.ACTION_DOWN, android.view.KeyEvent.KEYCODE_MEDIA_NEXT))
