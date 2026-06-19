@@ -1,7 +1,7 @@
 # Y-Connect
 
 <p align="center">
-  <img src="Yelena Connect/assets/logo.svg" alt="Y-Connect Logo" width="150"/>
+  <img src="logo.svg" alt="Y-Connect Logo" width="150"/>
 </p>
 
 ## What is Y-Connect?
@@ -22,40 +22,70 @@
 
 ## How does it work?
 
-The PC runs a lightweight PySide6 app that opens a WebSocket server on your local network. The Android app discovers it automatically via UDP broadcast and connects to it. All communication happens locally, nothing leaves your network.
+The PC runs a Python backend (engine + bridge) with a Flutter dashboard UI. The engine opens a WebSocket server for device communication, while the bridge exposes a separate WebSocket API for the Flutter frontend. An Android app discovers the PC automatically via UDP broadcast and connects to it. The desktop companion also shows a system tray icon with connection status, signal strength and quick media/volume actions. All communication happens locally, nothing leaves your network.
 
 ## Requirements
 
-### PC
+### PC (Desktop Companion)
+
+**Backend:**
 - **Python 3.10+**
-- **Qt 6**
-- **PySide6**
-- **websockets** · **psutil**
-- **xdotool** (X11) or **ydotool** (Wayland)
-- **xclip** (clipboard)
+- **PySide6** (system tray)
+- **websockets**
+- **engine module** (must be in the same directory or PYTHONPATH)
+
+**Frontend:**
+- **Flutter 3.0+** (Linux desktop enabled)
+- **Noto Sans CJK fonts** for Japanese/Korean text support
 
 ### Android
 - **Android 8.0+** (API 26)
 
 ## Installation
 
-### PC applet
+### PC Desktop Companion
 
-Clone the repository and install dependencies:
+Clone the repository:
 
 ```bash
 git clone https://github.com/Just-Alex22/Y-Connect.git
-cd Yelena-Connect
-
-pip install websockets psutil --break-system-packages
-sudo apt install xclip xdotool
+cd Y-Connect
 ```
 
-Run the app:
+Install Python dependencies:
 
 ```bash
-python3 Y-Connect/main.py
+pip install websockets PySide6 --break-system-packages
 ```
+
+Install CJK fonts (optional, needed for Japanese/Korean UI):
+
+Download and place these fonts in the `fonts/` folder:
+- [Noto Sans SC](https://fonts.google.com/noto/specimen/Noto+Sans+SC) (Chinese)
+- [Noto Sans KR](https://fonts.google.com/noto/specimen/Noto+Sans+KR) (Korean)
+- [Noto Sans JP](https://fonts.google.com/noto/specimen/Noto+Sans+JP) (Japanese)
+
+Then install Flutter dependencies and build:
+
+```bash
+cd Yelena\ Connect/
+flutter pub get
+flutter build linux
+```
+
+Or run directly in debug mode:
+
+```bash
+flutter run -d linux
+```
+
+Run the full app (backend + Flutter + system tray):
+
+```bash
+python3 start.py
+```
+
+This will launch the bridge, start the engine, open the Flutter dashboard and show the system tray icon automatically. Use the tray menu to control media, adjust volume, or quit (kills both processes).
 
 ### Android app
 
