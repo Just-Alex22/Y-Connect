@@ -653,7 +653,7 @@ class MediaPanel extends StatelessWidget {
             children: [
               _mediaBtn(Icons.skip_previous, () => backend.sendCommand('prev'), backend.connected),
               const SizedBox(width: 16),
-              _mediaBtnAnimated(playing ? Icons.pause_circle_filled : Icons.play_circle_filled, () => backend.sendCommand('media_pause'), backend.connected, 48),
+              _mediaBtnAnimated(playing ? Icons.pause_circle_filled : Icons.play_circle_filled, () => backend.sendCommand('play_pause'), backend.connected, 48),
               const SizedBox(width: 16),
               _mediaBtn(Icons.skip_next, () => backend.sendCommand('next'), backend.connected),
             ],
