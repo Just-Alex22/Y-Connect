@@ -6,6 +6,10 @@
   <img src="previews/phone2.jpg" width="30%">
 </p>
 
+<p align="center">
+  <img src="previews/pc.jpg" width="91%">
+</p>
+
 ## What is Y-Connect?
 
 **Y-Connect** is a free and open source app that lets you control your Linux PC from your Android phone over Wi-Fi. No USB cable, no cloud account, no proprietary services, just your local network.
