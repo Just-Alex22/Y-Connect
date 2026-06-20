@@ -6,8 +6,10 @@ import android.content.IntentFilter
 import android.media.MediaMetadata
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
-import android.net.wifi.WifiManager
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.os.BatteryManager
+import android.os.Build
 import android.os.Bundle
 import android.view.*
 import androidx.core.view.GravityCompat
@@ -94,6 +96,12 @@ class MainFragment : Fragment() {
                             requireContext().getColor(R.color.accent_green))
                         binding.connectionDot.setBackgroundResource(R.drawable.shape_dot_green)
                     }
+                    is ConnectionState.Connecting -> {
+                        binding.tvConnectionStatus.setText(R.string.connecting)
+                        binding.tvConnectionStatus.setTextColor(
+                            requireContext().getColor(R.color.text_secondary))
+                        binding.connectionDot.setBackgroundResource(R.drawable.shape_dot)
+                    }
                     is ConnectionState.Disconnected -> {
                         binding.tvConnectionStatus.setText(R.string.disconnected)
                         binding.tvConnectionStatus.setTextColor(
@@ -107,7 +115,6 @@ class MainFragment : Fragment() {
                             requireContext().getColor(R.color.accent_red))
                         binding.connectionDot.setBackgroundResource(R.drawable.shape_dot)
                     }
-                    else -> {}
                 }
             }
         }
@@ -161,10 +168,25 @@ class MainFragment : Fragment() {
 
     private fun sendWifiSignal() {
         try {
-            val wm = requireContext()
-                .applicationContext
-                .getSystemService(Context.WIFI_SERVICE) as WifiManager
-            val rssi = wm.connectionInfo?.rssi ?: -1
+            val cm = requireContext().applicationContext
+                .getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val rssi: Int
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val network = cm.activeNetwork ?: return
+                val caps = cm.getNetworkCapabilities(network) ?: return
+                if (!caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return
+                val signalStrength = caps.signalStrength
+                if (signalStrength == NetworkCapabilities.SIGNAL_STRENGTH_UNSPECIFIED) return
+                rssi = signalStrength
+            } else {
+                @Suppress("DEPRECATION")
+                val wm = requireContext().applicationContext
+                    .getSystemService(Context.WIFI_SERVICE) as android.net.wifi.WifiManager
+                @Suppress("DEPRECATION")
+                val info = wm.connectionInfo ?: return
+                @Suppress("DEPRECATION")
+                rssi = info.rssi
+            }
             if (rssi != 0 && rssi > -120) {
                 YelenaWebSocket.sendWifiSignal(rssi)
             }
