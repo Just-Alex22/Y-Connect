@@ -1,5 +1,3 @@
-
-
 import asyncio, json, sys, os, time, logging, signal, hashlib
 import threading, subprocess, tempfile, zipfile, io, base64
 from pathlib import Path
@@ -27,14 +25,10 @@ TRANSFER_DIR = CONFIG_DIR / "transfers"
 TRANSFER_DIR.mkdir(exist_ok=True)
 BRIDGE_PORT = 8767  
 
-# Global refs
 _flutter_process: Optional[subprocess.Popen] = None
 _qapp: Optional[QApplication] = None
 _tray: Optional[QSystemTrayIcon] = None
 
-# ═══════════════════════════════════════════════════════════════
-# Helpers
-# ═══════════════════════════════════════════════════════════════
 
 def _net_quality(rssi):
     if rssi >= -55: return "excellent"
@@ -59,9 +53,6 @@ def _ws_send(mtype, payload):
     if hasattr(manager, "ws_server") and manager.ws_server:
         manager.ws_server.broadcast(mtype, payload)
 
-# ═══════════════════════════════════════════════════════════════
-# Device Memory
-# ═══════════════════════════════════════════════════════════════
 
 class DeviceMemory:
     def __init__(self):
@@ -224,9 +215,6 @@ class TransferManager:
             bridge.send({"t":"xfer","d":{"file":Path(path).name,"done":True,"error":str(e)}})
 
 
-# ═══════════════════════════════════════════════════════════════
-# Bridge — WebSocket server for Flutter UI
-# ═══════════════════════════════════════════════════════════════
 
 class Bridge:
     def __init__(self):
@@ -264,7 +252,6 @@ class Bridge:
             await websocket.send(json.dumps({"t":"known_devices","d":devs}))
             if self.connected and self.current_device:
                 await websocket.send(json.dumps({"t":"conn","d":self.current_device}))
-            # Auto-send QR text so the Flutter UI can render the code
             try:
                 qr = manager.ws_server.get_qr_text()
                 if qr:
@@ -290,7 +277,7 @@ class Bridge:
 
         if t == "cmd":
             action = data.get("a", "")
-            if action == "media_pause":
+            if action == "play_pause":
                 _ws_send("phone_media_command", {"action":"play_pause"})
             elif action == "next":
                 _ws_send("phone_media_command", {"action":"next"})
@@ -339,9 +326,6 @@ class Bridge:
             await self._broadcast_loop()
 
 
-# ═══════════════════════════════════════════════════════════════
-# Global instances
-# ═══════════════════════════════════════════════════════════════
 
 bridge = Bridge()
 prefs = Preferences()
@@ -353,9 +337,6 @@ transfer_mgr = TransferManager(net_monitor)
 clipboard_sync = ClipboardSync()
 context = ContextEngine(device_mem)
 
-# ═══════════════════════════════════════════════════════════════
-# Engine callbacks  (called from engine thread — use bridge.send)
-# ═══════════════════════════════════════════════════════════════
 
 def _on_wifi_conn(device):
     bridge.connected = True; bridge.rssi = -1; bridge.current_device = device
@@ -398,7 +379,6 @@ def _on_rssi(rssi):
         bridge.rssi = rssi
         net_monitor.update_rssi(rssi)
         bridge.send({"t":"rssi","d":rssi})
-    # Immediately update tray icon when RSSI changes
     _update_tray()
 
 def _on_resources(d):
@@ -412,9 +392,6 @@ def _on_volume(lvl):
     bridge.send({"t":"vol","d":lvl})
 
 
-# ═══════════════════════════════════════════════════════════════
-# System Tray (PySide6 QSystemTrayIcon — same as old tray.py)
-# ═══════════════════════════════════════════════════════════════
 
 def _tray_icon_for_state():
     """QIcon from stat SVGs — same logic as old _icon_for_signal."""
@@ -445,9 +422,7 @@ def _update_tray():
 
 def _poll_signal():
     """QTimer callback — refresh tray icon based on current RSSI + connection state."""
-    # bridge.rssi is already kept up-to-date by _on_rssi callback.
-    # Also try to get RSSI directly from the engine as a fallback.
-    rssi = bridge.rssi  # start with what we already have
+    rssi = bridge.rssi
     srv = getattr(manager, 'ws_server', None)
     if srv:
         engine_rssi = getattr(srv, '_last_wifi_rssi', None)
@@ -456,7 +431,6 @@ def _poll_signal():
             bridge.rssi = rssi
             net_monitor.update_rssi(rssi)
             bridge.send({"t":"rssi","d":rssi})
-    # If connected but rssi is still -1, try is_wifi_connected as a sanity check
     if bridge.connected and rssi == -1:
         if not manager.is_wifi_connected():
             bridge.connected = False
@@ -525,7 +499,6 @@ def _build_tray():
     _tray.setIcon(_tray_icon_for_state())
     _tray.setToolTip("Y-Connect")
 
-    # Click icon → launch/show Flutter window
     _tray.activated.connect(
         lambda r: _launch_flutter() if r == QSystemTrayIcon.Trigger else None
     )
@@ -570,20 +543,15 @@ def _build_tray():
     _tray.setContextMenu(menu)
     _tray.setVisible(True)
 
-    # Poll RSSI every 6s to update icon (same as old tray)
     _sig_timer = QTimer()
     _sig_timer.timeout.connect(_poll_signal)
     _sig_timer.start(3000)
 
 
-# ═══════════════════════════════════════════════════════════════
-# Main
-# ═══════════════════════════════════════════════════════════════
 
 def main():
     global _qapp, _flutter_process
 
-    # Register engine callbacks
     manager.on_wifi_connected(_on_wifi_conn)
     manager.on_wifi_disconnected(_on_wifi_disc)
     manager.on_android_found(_on_found)
@@ -596,17 +564,13 @@ def main():
 
     log.info("Y-Connect bridge v2.0 starting")
 
-    # Create headless Qt app for tray
     _qapp = QApplication.instance() or QApplication(sys.argv)
     _qapp.setQuitOnLastWindowClosed(False)
 
-    # Build system tray
     _build_tray()
 
-    # Launch Flutter UI
     _launch_flutter()
 
-    # Run asyncio WebSocket bridge in a background thread
     loop = asyncio.new_event_loop()
 
     def _run_bridge():
@@ -619,7 +583,6 @@ def main():
     bridge_thread = threading.Thread(target=_run_bridge, daemon=True)
     bridge_thread.start()
 
-    # Handle signals → clean exit
     def _shutdown():
         log.info("Shutting down")
         _do_quit()
@@ -627,7 +590,6 @@ def main():
     for sig in (signal.SIGINT, signal.SIGTERM):
         signal.signal(sig, lambda s, f: _shutdown())
 
-    # Qt event loop runs here (tray lives in it)
     log.info("Y-Connect tray active")
     sys.exit(_qapp.exec())
 

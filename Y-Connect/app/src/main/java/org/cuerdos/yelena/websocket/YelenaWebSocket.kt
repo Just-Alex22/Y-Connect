@@ -41,7 +41,7 @@ object YelenaWebSocket {
     val pcNotifications    = MutableStateFlow<List<PcNotification>>(emptyList())
     val pcVolume           = MutableStateFlow<Int>(-1)
     val phoneNotifications = MutableStateFlow<List<PcNotification>>(emptyList())
-    val wifiSignal          = MutableStateFlow(-1)
+    val wifiSignal         = MutableStateFlow(-1)
     val terminalOutput     = MutableSharedFlow<TerminalOutput>(replay = 1)
     val clipboard          = MutableStateFlow("")
     val fileReceived       = MutableStateFlow<Pair<String, String>?>(null)
@@ -68,12 +68,10 @@ object YelenaWebSocket {
         lastPort = port
         connectJob?.cancel()
         connectionState.value = ConnectionState.Connecting
-        Log.i(TAG, "Conectando a ws://$ip:$port/ws")
         connectJob = scope.launch {
             try {
                 client.webSocket(host = ip, port = port, path = "/ws") {
                     session = this
-                    Log.i(TAG, "✓ Conectado a $ip:$port")
                     send(Frame.Text(json.encodeToString(WsMessage("ping", ""))))
                     for (frame in incoming) {
                         if (frame !is Frame.Text) continue
@@ -132,10 +130,21 @@ object YelenaWebSocket {
     fun requestBrightness()                = sendJson("get_brightness",         "")
     fun setBrightness(v: Int)              = sendJson("set_brightness",         """{"value":$v}""")
     fun sendPresentationCmd(a: String)     = sendJson("presentation",           """{"action":"$a"}""")
-    fun sendWifiSignal(rssi: Int)           = sendJson("wifi_signal",            """{"rssi":$rssi}""")
-    fun sendBattery(pct: Int, charging: Boolean) = sendJson("battery",             """{"pct":$pct,"charging":$charging}""")
-    fun sendPhoneMedia(title: String, artist: String, playing: Boolean) =
-        sendJson("phone_media", json.encodeToString(mapOf("title" to title, "artist" to artist, "playing" to playing.toString())))
+    fun sendWifiSignal(rssi: Int)          = sendJson("wifi_signal",            """{"rssi":$rssi}""")
+    fun sendBattery(pct: Int, charging: Boolean) = sendJson("battery",         """{"pct":$pct,"charging":$charging}""")
+
+    fun sendPhoneMedia(title: String, artist: String, playing: Boolean, artworkBase64: String? = null) {
+        val payload = buildString {
+            append("""{"title":${json.encodeToString(title)}""")
+            append(""","artist":${json.encodeToString(artist)}""")
+            append(""","playing":$playing""")
+            if (!artworkBase64.isNullOrEmpty()) {
+                append(""","artwork":${json.encodeToString(artworkBase64)}""")
+            }
+            append("}")
+        }
+        sendJson("phone_media", payload)
+    }
 
     fun sendNotification(id: String, pkg: String, title: String, text: String) =
         sendJson("send_notification", json.encodeToString(mapOf("id" to id, "app" to pkg, "title" to title, "text" to text)))
@@ -166,7 +175,7 @@ object YelenaWebSocket {
                 }
                 "phone_notifications" -> phoneNotifications.value   = json.decodeFromString(msg.payload)
                 "terminal_output"     -> scope.launch { terminalOutput.emit(json.decodeFromString(msg.payload)) }
-                "wifi_signal_ack"     -> { /* ignorar */ }
+                "wifi_signal_ack"     -> { }
                 "clipboard"           -> handleClipboardFromPc(msg.payload)
                 "file_send"           -> handleFileFromPc(msg.payload)
                 "processes"           -> handleProcesses(msg.payload)
@@ -215,7 +224,6 @@ object YelenaWebSocket {
                 session?.send(Frame.Text(json.encodeToString(
                     WsMessage("pair_response", """{"accepted":true}""")
                 )))
-                Log.i(TAG, "pair_response sent")
             } catch (e: Exception) {
                 Log.e(TAG, "pair_response: ${e.message}")
             }
@@ -232,7 +240,6 @@ object YelenaWebSocket {
             onClipboardFromPc?.invoke()
 
             clipboard.value = text
-            Log.d(TAG, "Portapapeles PC→Android: ${text.take(40)}")
             appContext?.let { ctx ->
                 val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 cm.setPrimaryClip(ClipData.newPlainText("Yelena", text))
@@ -266,13 +273,12 @@ object YelenaWebSocket {
                     ctx.contentResolver.openOutputStream(uri)?.use { it.write(bytes) }
                     values.clear(); values.put(MediaStore.Downloads.IS_PENDING, 0)
                     ctx.contentResolver.update(uri, values, null, null)
-                    path = "Descargas/$name"
+                    path = "Downloads/$name"
                 } else {
                     val f = File(Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DOWNLOADS), name)
                     f.writeBytes(bytes); path = f.absolutePath
                 }
-                Log.i(TAG, "✓ Archivo: $path")
                 fileReceived.value = Pair(name, path)
             } catch (e: Exception) { Log.e(TAG, "file: ${e.message}") }
         }

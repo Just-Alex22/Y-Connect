@@ -3,6 +3,7 @@ package org.cuerdos.yelena.ui.main
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Bitmap
 import android.media.MediaMetadata
 import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
@@ -11,6 +12,7 @@ import android.net.NetworkCapabilities
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Base64
 import android.view.*
 import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
@@ -24,6 +26,7 @@ import org.cuerdos.yelena.databinding.FragmentMainBinding
 import org.cuerdos.yelena.model.*
 import org.cuerdos.yelena.websocket.ConnectionState
 import org.cuerdos.yelena.websocket.YelenaWebSocket
+import java.io.ByteArrayOutputStream
 
 class MainFragment : Fragment() {
     private var _binding: FragmentMainBinding? = null
@@ -146,7 +149,15 @@ class MainFragment : Fragment() {
             val title   = meta?.getString(MediaMetadata.METADATA_KEY_TITLE) ?: ""
             val artist  = meta?.getString(MediaMetadata.METADATA_KEY_ARTIST) ?: ""
             val playing = state?.state == PlaybackState.STATE_PLAYING
-            YelenaWebSocket.sendPhoneMedia(title, artist, playing)
+            val artworkBase64 = meta?.getBitmap(MediaMetadata.METADATA_KEY_ALBUM_ART)
+                ?: meta?.getBitmap(MediaMetadata.METADATA_KEY_ART)
+            val artwork = artworkBase64?.let { bmp ->
+                val scaled = Bitmap.createScaledBitmap(bmp, 200, 200, true)
+                val out = ByteArrayOutputStream()
+                scaled.compress(Bitmap.CompressFormat.JPEG, 75, out)
+                Base64.encodeToString(out.toByteArray(), Base64.NO_WRAP)
+            }
+            YelenaWebSocket.sendPhoneMedia(title, artist, playing, artwork)
         } catch (_: Exception) {}
     }
 
