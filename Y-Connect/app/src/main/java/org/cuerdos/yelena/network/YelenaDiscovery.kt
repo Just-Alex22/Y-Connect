@@ -16,26 +16,28 @@ object YelenaDiscovery {
     private const val TAG      = "YelenaDiscovery"
     const val  UDP_PORT        = 1716
     private const val INTERVAL = 3000L
+    private const val TIMEOUT_MS = 10_000L
 
     val devices   = MutableStateFlow<List<DiscoveredDevice>>(emptyList())
     val isRunning = MutableStateFlow(false)
 
     private var sendSocket: DatagramSocket? = null
     private var recvSocket: DatagramSocket? = null
-    private val found   = mutableMapOf<String, DiscoveredDevice>()
+    private val found     = mutableMapOf<String, DiscoveredDevice>()
+    private val lastSeen  = mutableMapOf<String, Long>()
     @Volatile private var running = false
 
     fun start() {
         if (running) return
         running = true
         isRunning.value = true
-        Log.d(TAG, "Iniciando descubrimiento UDP en puerto $UDP_PORT")
 
         thread(isDaemon = true, name = "Yelena-Send") {
             try {
                 sendSocket = DatagramSocket().also { it.broadcast = true }
                 while (running) {
                     trySend()
+                    pruneStale()
                     Thread.sleep(INTERVAL)
                 }
             } catch (e: Exception) {
@@ -53,10 +55,8 @@ object YelenaDiscovery {
                     sock.bind(InetSocketAddress(UDP_PORT))
                     sock.soTimeout    = 2000
                 }
-                Log.d(TAG, "Receptor UDP listo en :$UDP_PORT")
                 val buf  = ByteArray(4096)
                 val myIp = getLocalIp()
-                Log.d(TAG, "Mi IP: $myIp")
 
                 while (running) {
                     try {
@@ -64,7 +64,6 @@ object YelenaDiscovery {
                         recvSocket?.receive(pkt)
                         val src = pkt.address.hostAddress ?: continue
                         val raw = String(pkt.data, 0, pkt.length)
-                        Log.d(TAG, "Paquete de $src: ${raw.take(80)}")
                         if (src == myIp) continue
                         handlePacket(src, raw)
                     } catch (_: java.net.SocketTimeoutException) {
@@ -84,6 +83,7 @@ object YelenaDiscovery {
         sendSocket?.close(); sendSocket = null
         recvSocket?.close(); recvSocket = null
         found.clear()
+        lastSeen.clear()
         devices.value = emptyList()
     }
 
@@ -96,7 +96,7 @@ object YelenaDiscovery {
 
     private fun trySend() {
         val ip = getLocalIp()
-        if (ip.isEmpty()) { Log.w(TAG, "Sin IP local, no puedo enviar broadcast"); return }
+        if (ip.isEmpty()) return
 
         val payload = JSONObject().apply {
             put("type",    "yelena")
@@ -114,10 +114,21 @@ object YelenaDiscovery {
                 val dest = InetAddress.getByName(addr)
                 sendSocket?.send(DatagramPacket(payload, payload.size, dest, UDP_PORT))
             }
-            Log.d(TAG, "Broadcast enviado desde $ip a ${getBroadcastAddr()}")
         } catch (e: Exception) {
             Log.w(TAG, "Broadcast send failed: ${e.message}")
         }
+    }
+
+    private fun pruneStale() {
+        val now = System.currentTimeMillis()
+        val stale = lastSeen.entries.filter { now - it.value > TIMEOUT_MS }.map { it.key }
+        if (stale.isEmpty()) return
+        stale.forEach { ip ->
+            found.remove(ip)
+            lastSeen.remove(ip)
+            Log.d(TAG, "Device expired: $ip")
+        }
+        devices.value = found.values.toList()
     }
 
     private fun handlePacket(src: String, raw: String) {
@@ -131,7 +142,8 @@ object YelenaDiscovery {
             val name  = j.optString("name", src)
             val port  = j.optInt("port", 8765)
             val isNew = src !in found
-            found[src] = DiscoveredDevice(name, src, port, os)
+            found[src]    = DiscoveredDevice(name, src, port, os)
+            lastSeen[src] = System.currentTimeMillis()
             devices.value = found.values.toList()
             if (isNew) Log.i(TAG, "✓ PC encontrado: $name @ $src:$port")
         } catch (e: Exception) {
