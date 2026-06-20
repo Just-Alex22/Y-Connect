@@ -1,7 +1,9 @@
-# Y-Connect
+# <img src=logo.svg height="29" valign="middle"> Y-Connect
 
 <p align="center">
-  <img src="logo.svg" alt="Y-Connect Logo" width="150"/>
+  <img src="previews/phone3.jpg" width="30%">
+  <img src="previews/phone.jpg" width="30%">
+  <img src="previews/phone2.jpg" width="30%">
 </p>
 
 ## What is Y-Connect?
