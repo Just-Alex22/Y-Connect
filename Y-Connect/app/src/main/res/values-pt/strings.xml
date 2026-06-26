@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Yelena Connect</string>
-    <string name="welcome_title">Bem-vindo ao\nYelena Connect</string>
+    <string name="app_name">Y-Connect</string>
+    <string name="welcome_title">Bem-vindo ao
+Y-Connect</string>
     <string name="welcome_subtitle">Controle seu PC pelo celular.\nEscaneie o QR code ou conecte automaticamente.</string>
     <string name="btn_start">Começar</string>
     <string name="privacy_policy">Ao continuar você aceita nossa Política de Privacidade</string>
-    <string name="connect_title">Conectar ao Yelena Connect</string>
-    <string name="searching">Procurando Yelena Connect na rede…</string>
+    <string name="connect_title">Conectar ao Y-Connect</string>
+    <string name="searching">Procurando Y-Connect na rede…</string>
     <string name="on_network">NA REDE</string>
     <string name="qr_section">CÓDIGO QR</string>
     <string name="manual_section">MANUAL</string>
@@ -17,7 +18,7 @@
     <string name="enter_ip">Digite um endereço IP</string>
     <string name="qr_invalid">QR inválido</string>
     <string name="qr_scanner_title">Escanear QR</string>
-    <string name="qr_instruction">Aponte para o QR code do Yelena Connect no seu PC</string>
+    <string name="qr_instruction">Aponte para o QR code do Y-Connect no seu PC</string>
     <string name="disconnected">Desconectado</string>
     <string name="connected_to">Conectado · %1$s</string>
     <string name="resources_title">RECURSOS DO PC</string>
@@ -55,7 +56,7 @@
     <string name="terminate">Encerrar</string>
     <string name="cancel">Cancelar</string>
     <string name="apps_title">Aplicativos do PC</string>
-    <string name="clipboard_title">Histórico da área de transferência</string>
+    <string name="clipboard_title">Área de transferência</string>
     <string name="no_history">Sem histórico</string>
     <string name="copied_to_pc">Copiado para o PC</string>
     <string name="trackpad_title">Trackpad / Mouse</string>
@@ -76,8 +77,31 @@
     <string name="error_prefix">Erro: %1$s</string>
     <string name="keyboard_title">Teclado remoto</string>
     <string name="nav_keyboard">Teclado remoto</string>
-    <string name="keyboard_hint">Digite aqui para enviar ao PC…</string>
+    <string name="keyboard_hint">Digite aqui — será colado no PC</string>
     <string name="special_keys">Teclas especiais</string>
     <string name="clipboard_current">ÁREA DE TRANSFERÊNCIA ATUAL</string>
     <string name="history_label">HISTÓRICO</string>
+    <string name="file_incoming_title">Arquivo recebido</string>
+    <string name="file_incoming_message">%1$s (%2$s · %3$s)\nDeseja receber este arquivo?</string>
+    <string name="file_accept">Aceitar</string>
+    <string name="file_reject">Rejeitar</string>
+    <string name="file_received_title">Arquivo recebido</string>
+    <string name="file_notif_channel_name">Y-Connect</string>
+    <string name="file_notif_channel_desc">Arquivos folder</string>
+    <string name="terminal_input_hint">Digite a entrada…</string>
+    <string name="about_subtitle">App Android para Y-Connect PC</string>
+    <string name="about_ecosystem">Parte do ecossistema CuerdOS</string>
+    <string name="about_license_name">GNU General Public License v3.0</string>
+    <string name="about_open_source">Software livre e de código aberto</string>
+    <string name="about_open">Abrir</string>
+    <string name="qr_title">Conectar ao Y-Connect</string>
+    <string name="manual_connect">Conectar manualmente</string>
+    <string name="no_content">Sem conteúdo</string>
+    <string name="send_to_pc">Enviar ao PC</string>
+    <string name="phone_clip_to_pc">Enviar área de transferência do celular ao PC</string>
+    <string name="quick_send_hint">Digite texto para enviar ao PC…</string>
+    <string name="quick_send_section">ENVIO RÁPIDO</string>
+    <string name="snippet_section">FRAGMENTOS</string>
+    <string name="history_section">HISTÓRICO</string>
+    <string name="nav_subtitle">v1.0.0 · CuerdOS</string>
 </resources>

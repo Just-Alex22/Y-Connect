@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Y-Connect</string>
-    <string name="welcome_title">Benvenuto in\nY-Connect</string>
+    <string name="welcome_title">Benvenuto su
+Y-Connect</string>
     <string name="welcome_subtitle">Controlla il tuo PC dal telefono.\nScansiona il codice QR o connettiti automaticamente.</string>
     <string name="btn_start">Inizia</string>
     <string name="privacy_policy">Continuando accetti la nostra Informativa sulla privacy</string>
     <string name="connect_title">Connetti a Y-Connect</string>
-    <string name="searching">Ricerca Y-Connect in rete…</string>
+    <string name="searching">Ricerca di Y-Connect in rete…</string>
     <string name="on_network">IN RETE</string>
     <string name="qr_section">CODICE QR</string>
     <string name="manual_section">MANUALE</string>
@@ -17,7 +18,7 @@
     <string name="enter_ip">Inserisci un IP</string>
     <string name="qr_invalid">QR non valido</string>
     <string name="qr_scanner_title">Scansiona QR</string>
-    <string name="qr_instruction">Punta al codice QR Y-Connect del tuo PC</string>
+    <string name="qr_instruction">Punta al codice QR di Y-Connect sul tuo PC</string>
     <string name="disconnected">Disconnesso</string>
     <string name="connected_to">Connesso · %1$s</string>
     <string name="resources_title">RISORSE PC</string>
@@ -55,7 +56,7 @@
     <string name="terminate">Termina</string>
     <string name="cancel">Annulla</string>
     <string name="apps_title">Applicazioni PC</string>
-    <string name="clipboard_title">Cronologia appunti</string>
+    <string name="clipboard_title">Appunti</string>
     <string name="no_history">Nessuna cronologia</string>
     <string name="copied_to_pc">Copiato sul PC</string>
     <string name="trackpad_title">Trackpad / Mouse</string>
@@ -80,7 +81,7 @@
     <string name="error_prefix">Errore: %1$s</string>
     <string name="keyboard_title">Tastiera remota</string>
     <string name="nav_keyboard">Tastiera remota</string>
-    <string name="keyboard_hint">Digita qui per inviare al PC…</string>
+    <string name="keyboard_hint">Scrivi qui — verrà incollato sul PC</string>
     <string name="special_keys">Tasti speciali</string>
     <string name="clipboard_current">APPUNTI CORRENTI</string>
     <string name="history_label">CRONOLOGIA</string>
@@ -89,4 +90,27 @@
     <string name="notif_permission_message">Y-Connect necessita l\'accesso alle notifiche per mostrarle sul PC.</string>
     <string name="notif_permission_open">Apri impostazioni</string>
     <string name="notif_permission_skip">Non ora</string>
+    <string name="file_incoming_title">File in arrivo</string>
+    <string name="file_incoming_message">%1$s (%2$s · %3$s)\nVuoi ricevere questo file?</string>
+    <string name="file_accept">Accetta</string>
+    <string name="file_reject">Rifiuta</string>
+    <string name="file_received_title">File ricevuto</string>
+    <string name="file_notif_channel_name">Y-Connect</string>
+    <string name="file_notif_channel_desc">File folder</string>
+    <string name="terminal_input_hint">Digita input…</string>
+    <string name="about_subtitle">App Android per Y-Connect PC</string>
+    <string name="about_ecosystem">Parte dell\'ecosistema CuerdOS</string>
+    <string name="about_license_name">GNU General Public License v3.0</string>
+    <string name="about_open_source">Software libero e open source</string>
+    <string name="about_open">Apri</string>
+    <string name="qr_title">Connetti a Y-Connect</string>
+    <string name="manual_connect">Connetti manualmente</string>
+    <string name="no_content">Nessun contenuto</string>
+    <string name="send_to_pc">Invia al PC</string>
+    <string name="phone_clip_to_pc">Invia appunti del telefono al PC</string>
+    <string name="quick_send_hint">Scrivi testo da inviare al PC…</string>
+    <string name="quick_send_section">INVIO RAPIDO</string>
+    <string name="snippet_section">FRAMMENTI</string>
+    <string name="history_section">CRONOLOGIA</string>
+    <string name="nav_subtitle">v1.0.0 · CuerdOS</string>
 </resources>

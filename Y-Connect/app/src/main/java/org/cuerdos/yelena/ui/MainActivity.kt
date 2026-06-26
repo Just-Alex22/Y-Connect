@@ -1,17 +1,27 @@
 package org.cuerdos.yelena.ui
 
 import android.content.ClipboardManager
-import android.content.Context
 import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.provider.Settings
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.net.Uri
+import android.text.format.Formatter
+import androidx.core.app.NotificationCompat
+import androidx.core.content.FileProvider
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.NavHostFragment
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import org.cuerdos.yelena.R
 import org.cuerdos.yelena.YelenaNotificationListener
 import org.cuerdos.yelena.YelenaService
@@ -20,21 +30,26 @@ import org.cuerdos.yelena.websocket.YelenaWebSocket
 
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        private const val FILE_CHANNEL_ID = "yelena_files"
+        private var FILE_NOTIF_ID = 2000
+    }
+
     private lateinit var binding: ActivityMainBinding
     private var clipboardListener: ClipboardManager.OnPrimaryClipChangedListener? = null
+    private var fileOfferDialog: AlertDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val prefs = getSharedPreferences("yelena_prefs", Context.MODE_PRIVATE)
         AppCompatDelegate.setDefaultNightMode(
             prefs.getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
         )
-
         val overlayRes = accentOverlay(prefs.getString("accent_color", "#5a7a22") ?: "#5a7a22")
         if (overlayRes != 0) theme.applyStyle(overlayRes, true)
 
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         window.statusBarColor     = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
 
@@ -64,6 +79,24 @@ class MainActivity : AppCompatActivity() {
         }
         cm.addPrimaryClipChangedListener(clipboardListener!!)
 
+        lifecycleScope.launch {
+            YelenaWebSocket.fileOffer.collectLatest { offer ->
+                if (offer != null) showFileOfferDialog(offer)
+                else { fileOfferDialog?.dismiss(); fileOfferDialog = null }
+            }
+        }
+
+        lifecycleScope.launch {
+            YelenaWebSocket.fileReceived.collectLatest { received ->
+                if (received != null) {
+                    showFileReceivedNotification(received.first, received.second)
+                    YelenaWebSocket.fileReceived.value = null
+                }
+            }
+        }
+
+        createFileNotificationChannel()
+
         val ip   = prefs.getString("last_ip", null)
         val port = prefs.getInt("last_port", YelenaWebSocket.WS_PORT)
 
@@ -79,6 +112,65 @@ class MainActivity : AppCompatActivity() {
                 navHost.navController.setGraph(graph, null)
             }
         }
+    }
+
+    private fun showFileOfferDialog(offer: Map<String, String>) {
+        fileOfferDialog?.dismiss()
+        val tid  = offer["transfer_id"]?.takeIf { it.isNotEmpty() } ?: return
+        val name = offer["name"] ?: "?"
+        val size = offer["size"]?.toLongOrNull() ?: 0L
+        val ext  = offer["ext"] ?: "?"
+        val sizeStr = Formatter.formatShortFileSize(this, size)
+        fileOfferDialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.file_incoming_title))
+            .setMessage(getString(R.string.file_incoming_message, name, ext, sizeStr))
+            .setPositiveButton(getString(R.string.file_accept)) { _, _ ->
+                YelenaWebSocket.sendFileAccept(tid)
+            }
+            .setNegativeButton(getString(R.string.file_reject)) { _, _ ->
+                YelenaWebSocket.sendFileReject(tid)
+                YelenaWebSocket.fileOffer.value = null
+            }
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun createFileNotificationChannel() {
+        val ch = NotificationChannel(
+            FILE_CHANNEL_ID,
+            getString(R.string.file_notif_channel_name),
+            NotificationManager.IMPORTANCE_DEFAULT
+        ).apply { setShowBadge(true) }
+        getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
+    }
+
+    private fun showFileReceivedNotification(name: String, path: String) {
+        val uri = try {
+            androidx.core.content.FileProvider.getUriForFile(
+                this,
+                "$packageName.provider",
+                java.io.File(path)
+            )
+        } catch (_: Exception) {
+            android.net.Uri.parse("content://downloads/my_downloads")
+        }
+        val openIntent = PendingIntent.getActivity(
+            this, System.currentTimeMillis().toInt(),
+            Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, contentResolver.getType(uri) ?: "*/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            },
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        val notif = NotificationCompat.Builder(this, FILE_CHANNEL_ID)
+            .setSmallIcon(android.R.drawable.stat_sys_download_done)
+            .setContentTitle(getString(R.string.file_received_title))
+            .setContentText(name)
+            .setContentIntent(openIntent)
+            .setAutoCancel(true)
+            .build()
+        getSystemService(NotificationManager::class.java)
+            .notify(FILE_NOTIF_ID++, notif)
     }
 
     private fun accentOverlay(hex: String): Int = when (hex.lowercase()) {
@@ -119,5 +211,6 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboardListener?.let { cm.removePrimaryClipChangedListener(it) }
+        fileOfferDialog?.dismiss()
     }
 }

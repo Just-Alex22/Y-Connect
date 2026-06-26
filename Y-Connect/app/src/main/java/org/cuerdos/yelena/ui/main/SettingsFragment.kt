@@ -13,12 +13,12 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import org.cuerdos.yelena.R
 import org.cuerdos.yelena.databinding.FragmentSettingsBinding
+import org.cuerdos.yelena.websocket.YelenaWebSocket
 
 class SettingsFragment : Fragment() {
     private var _b: FragmentSettingsBinding? = null
     private val b get() = _b!!
 
-    // Temas disponibles: nombre → color hex
     private val themes = listOf(
         "green"  to "#5a7a22",
         "purple" to "#9b59b6",
@@ -41,7 +41,6 @@ class SettingsFragment : Fragment() {
 
         val prefs = requireContext().getSharedPreferences("yelena_prefs", Context.MODE_PRIVATE)
 
-        // ── Tema oscuro/claro ─────────────────────────────────────────────────
         b.switchTheme.isChecked =
             prefs.getInt("theme_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM) !=
             AppCompatDelegate.MODE_NIGHT_NO
@@ -52,11 +51,9 @@ class SettingsFragment : Fragment() {
             prefs.edit().putInt("theme_mode", mode).apply()
         }
 
-        // ── Temas de color ────────────────────────────────────────────────────
         val savedTheme = prefs.getString("accent_theme", "green") ?: "green"
         buildThemePicker(savedTheme, prefs)
 
-        // ── Idioma ────────────────────────────────────────────────────────────
         val activeLang = AppCompatDelegate.getApplicationLocales()
             .toLanguageTags().split(",").firstOrNull()?.take(2)?.ifEmpty { null }
             ?: resources.configuration.locales[0].language
@@ -93,24 +90,19 @@ class SettingsFragment : Fragment() {
 
     private fun buildThemePicker(savedTheme: String, prefs: android.content.SharedPreferences) {
         b.themeColorContainer.removeAllViews()
-        val size = (48 * resources.displayMetrics.density).toInt()
-        val margin = (8 * resources.displayMetrics.density).toInt()
+        val size   = (48 * resources.displayMetrics.density).toInt()
+        val margin = (8  * resources.displayMetrics.density).toInt()
 
         themes.forEach { (name, hex) ->
             val dot = ImageView(requireContext()).apply {
-                layoutParams = LinearLayout.LayoutParams(size, size).also {
-                    it.marginEnd = margin
-                }
+                layoutParams = LinearLayout.LayoutParams(size, size).also { it.marginEnd = margin }
                 setBackgroundResource(R.drawable.shape_dot_theme)
                 backgroundTintList = ColorStateList.valueOf(Color.parseColor(hex))
                 alpha = if (name == savedTheme) 1f else 0.4f
                 setOnClickListener {
                     applyTheme(name, hex, prefs)
-                    // Actualizar opacidad de todos los dots
                     (b.themeColorContainer as LinearLayout).let { container ->
-                        for (i in 0 until container.childCount) {
-                            container.getChildAt(i).alpha = 0.4f
-                        }
+                        for (i in 0 until container.childCount) container.getChildAt(i).alpha = 0.4f
                     }
                     alpha = 1f
                 }
@@ -121,7 +113,9 @@ class SettingsFragment : Fragment() {
 
     private fun applyTheme(name: String, hex: String, prefs: android.content.SharedPreferences) {
         prefs.edit().putString("accent_theme", name).putString("accent_color", hex).apply()
-        // Notificar al Activity para que actualice el colorPrimary en runtime
+        if (YelenaWebSocket.isConnected()) {
+            YelenaWebSocket.sendAccentColor(hex)
+        }
         requireActivity().let { act ->
             if (act is org.cuerdos.yelena.ui.MainActivity) {
                 act.applyAccentColor(hex)

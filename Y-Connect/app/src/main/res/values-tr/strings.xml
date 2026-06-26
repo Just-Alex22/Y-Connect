@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Y-Connect</string>
-    <string name="welcome_title">Y-Connect\'e\nHoş Geldiniz</string>
+    <string name="welcome_title">Y-Connect\'e
+Hoş Geldiniz</string>
     <string name="welcome_subtitle">PC\'nizi telefonunuzdan kontrol edin.\nQR kodu tarayın veya otomatik bağlanın.</string>
     <string name="btn_start">Başla</string>
     <string name="privacy_policy">Devam ederek Gizlilik Politikamızı kabul etmiş olursunuz</string>
@@ -17,7 +18,7 @@
     <string name="enter_ip">IP girin</string>
     <string name="qr_invalid">Geçersiz QR</string>
     <string name="qr_scanner_title">QR Tara</string>
-    <string name="qr_instruction">PC\'nizdeki Y-Connect QR koduna yöneltin</string>
+    <string name="qr_instruction">PC\'nizdeki Y-Connect QR kodunu gösterin</string>
     <string name="disconnected">Bağlantı Kesildi</string>
     <string name="connected_to">Bağlı · %1$s</string>
     <string name="resources_title">PC KAYNAKLARI</string>
@@ -55,7 +56,7 @@
     <string name="terminate">Sonlandır</string>
     <string name="cancel">İptal</string>
     <string name="apps_title">PC Uygulamaları</string>
-    <string name="clipboard_title">Pano Geçmişi</string>
+    <string name="clipboard_title">Pano</string>
     <string name="no_history">Geçmiş yok</string>
     <string name="copied_to_pc">PC\'ye kopyalandı</string>
     <string name="trackpad_title">Trackpad / Fare</string>
@@ -80,7 +81,7 @@
     <string name="error_prefix">Hata: %1$s</string>
     <string name="keyboard_title">Uzak Klavye</string>
     <string name="nav_keyboard">Uzak Klavye</string>
-    <string name="keyboard_hint">PC\'ye göndermek için buraya yazın…</string>
+    <string name="keyboard_hint">Buraya yazın — PC\'ye yapıştırılacak</string>
     <string name="special_keys">Özel Tuşlar</string>
     <string name="clipboard_current">MEVCUT PANO</string>
     <string name="history_label">GEÇMİŞ</string>
@@ -89,5 +90,27 @@
     <string name="notif_permission_message">Y-Connect, bildirimleri PC\'de göstermek için erişim gerektirir.</string>
     <string name="notif_permission_open">Ayarları Aç</string>
     <string name="notif_permission_skip">Şimdi Değil</string>
+    <string name="file_incoming_title">Gelen dosya</string>
+    <string name="file_incoming_message">%1$s (%2$s · %3$s)\nBu dosyayı almak istiyor musunuz?</string>
+    <string name="file_accept">Kabul Et</string>
+    <string name="file_reject">Reddet</string>
+    <string name="file_received_title">Dosya alındı</string>
+    <string name="file_notif_channel_name">Y-Connect</string>
+    <string name="file_notif_channel_desc">Dosyalar folder</string>
+    <string name="terminal_input_hint">Girdi yazın…</string>
+    <string name="about_subtitle">Y-Connect PC için Android uygulaması</string>
+    <string name="about_ecosystem">CuerdOS ekosisteminin bir parçası</string>
+    <string name="about_license_name">GNU General Public License v3.0</string>
+    <string name="about_open_source">Özgür ve açık kaynaklı yazılım</string>
+    <string name="about_open">Aç</string>
+    <string name="qr_title">Y-Connect\'e Bağlan</string>
+    <string name="manual_connect">Manuel bağlan</string>
+    <string name="no_content">İçerik yok</string>
+    <string name="send_to_pc">PC\'ye gönder</string>
+    <string name="phone_clip_to_pc">Telefon panosunu PC\'ye gönder</string>
+    <string name="quick_send_hint">PC\'ye gönderilecek metin yazın…</string>
+    <string name="quick_send_section">HIZLI GÖNDER</string>
+    <string name="snippet_section">PARÇACIKLAR</string>
+    <string name="history_section">GEÇMİŞ</string>
+    <string name="nav_subtitle">v1.0.0 · CuerdOS</string>
 </resources>
-

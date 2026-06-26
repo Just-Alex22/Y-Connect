@@ -23,7 +23,7 @@ class C {
   static const fg      = Color(0xFFFFFFFF);
   static const fgDim   = Color(0xFF9a9996);
   static const fgMid   = Color(0xFFc0bfb8);
-  static const accent  = Color(0xFF5a7a22);
+  static var accent     = const Color(0xFF5a7a22);
   static const accent2 = Color(0xFF3584e4);
   static const warn    = Color(0xFFe5a50a);
   static const err     = Color(0xFFc01c28);
@@ -51,9 +51,12 @@ class Backend extends ChangeNotifier {
   int _rssi = -1;
   String _reconnStatus = "";
   Map<String, dynamic>? _mediaInfo;
+  Color _accentColor = C.accent;
+  Map<String, dynamic>? _pcMediaInfo;
   int _volume = -1;
   List<Map<String, dynamic>> _notifications = [];
   List<Map<String, dynamic>> _transferLog = [];
+  Map<String, dynamic>? _activeTransfer;
   String _clipboardRecv = "";
   String _pairIp = "";
   String _pairName = "";
@@ -71,9 +74,12 @@ class Backend extends ChangeNotifier {
   String get netQuality => _netQuality;
   String get reconnStatus => _reconnStatus;
   Map<String, dynamic>? get mediaInfo => _mediaInfo;
+  Color get accentColor => _accentColor;
+  Map<String, dynamic>? get pcMediaInfo => _pcMediaInfo;
   int get volume => _volume;
   List<Map<String, dynamic>> get notifications => _notifications;
   List<Map<String, dynamic>> get transferLog => _transferLog;
+  Map<String, dynamic>? get activeTransfer => _activeTransfer;
   String get clipboardRecv => _clipboardRecv;
   String get pairIp => _pairIp;
   String get pairName => _pairName;
@@ -148,8 +154,21 @@ class Backend extends ChangeNotifier {
         _deviceName = ''; _rssi = -1; notifyListeners();
       case 'res':
         notifyListeners();
-      case 'media':
+      case 'pc_media':
+        _pcMediaInfo = Map<String, dynamic>.from(d as Map); notifyListeners();
+      case 'phone_media':
         _mediaInfo = Map<String, dynamic>.from(d as Map); notifyListeners();
+      case 'accent_color':
+        final hex = (d as Map?)?['hex'] as String? ?? '';
+        if (hex.isNotEmpty) {
+          try {
+            final cleaned = hex.startsWith('#') ? hex.substring(1) : hex;
+            final parsed = Color(int.parse('FF$cleaned', radix: 16));
+            _accentColor = parsed;
+            C.accent = parsed;
+          } catch (_) {}
+          notifyListeners();
+        }
       case 'bat':
         final bd = Map<String, dynamic>.from(d as Map);
         _batteryPct = (bd['pct'] as num).toInt(); _batteryCharging = bd['ch'] as bool; notifyListeners();
@@ -172,7 +191,10 @@ class Backend extends ChangeNotifier {
       case 'xfer':
         final xd = Map<String, dynamic>.from(d as Map);
         if (xd['done'] == true) {
-          _transferLog.add(xd); notifyListeners();
+          _activeTransfer = null;
+          _transferLog.add(xd);
+        } else {
+          _activeTransfer = xd;
         }
         notifyListeners();
       case 'vol':
@@ -516,7 +538,7 @@ class StatusPanel extends StatelessWidget {
           Text(langMgr.translate('device_info'), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: C.fg)),
           const SizedBox(height: 12),
           _infoRow(Icons.phone_android, langMgr.translate('model'), backend.currentDevice?['model'] ?? '--'),
-          _infoRow(Icons.android, langMgr.translate('android_label'), _fmtAndroid(backend.currentDevice?['android_version'])),
+          _infoRow(Icons.android, langMgr.translate('manufacturer_label'), backend.currentDevice?['manufacturer'] ?? '--'),
           _infoRow(Icons.wifi, 'IP', backend.currentDevice?['ip'] ?? '--'),
           const SizedBox(height: 20),
           const Divider(color: C.border, height: 1),
@@ -591,10 +613,7 @@ class StatusPanel extends StatelessWidget {
     );
   }
 
-  String _fmtAndroid(ver) {
-    if (ver == null || ver == '--') return '--';
-    return 'Android $ver';
-  }
+
 }
 
 
@@ -817,6 +836,11 @@ class _FilesPanelState extends State<FilesPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final active  = widget.backend.activeTransfer;
+    final waiting = active?['waiting'] == true;
+    final progress = (active?['progress'] as num?)?.toDouble() ?? 0.0;
+    final sending  = active != null && !waiting;
+
     return Padding(
       padding: const EdgeInsets.all(20),
       child: Column(
@@ -826,11 +850,11 @@ class _FilesPanelState extends State<FilesPanel> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: widget.backend.connected ? _pickFile : null,
+                  onPressed: (widget.backend.connected && active == null) ? _pickFile : null,
                   icon: const Icon(Icons.send, size: 18),
                   label: Text(langMgr.translate('send_file')),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: widget.backend.connected ? C.accent : C.dis,
+                    backgroundColor: (widget.backend.connected && active == null) ? C.accent : C.dis,
                     foregroundColor: C.fg,
                     disabledBackgroundColor: C.bgHover,
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -843,7 +867,9 @@ class _FilesPanelState extends State<FilesPanel> {
                 children: [
                   Checkbox(
                     value: _compress,
-                    onChanged: widget.backend.connected ? (v) => setState(() => _compress = v!) : null,
+                    onChanged: (widget.backend.connected && active == null)
+                        ? (v) => setState(() => _compress = v!)
+                        : null,
                     activeColor: C.accent,
                     checkColor: C.fg,
                   ),
@@ -852,6 +878,42 @@ class _FilesPanelState extends State<FilesPanel> {
               ),
             ],
           ),
+          if (active != null) ...[
+            const SizedBox(height: 14),
+            Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        waiting
+                            ? langMgr.translate('waiting_for_approval')
+                            : '${langMgr.translate('sending')} ${active['file'] ?? ''}',
+                        style: TextStyle(fontSize: 11, color: C.fgDim),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: waiting ? null : progress,
+                          backgroundColor: C.bgHover,
+                          valueColor: AlwaysStoppedAnimation<Color>(C.accent),
+                          minHeight: 6,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (sending) ...[
+                  const SizedBox(width: 10),
+                  Text('${(progress * 100).toStringAsFixed(0)}%',
+                      style: TextStyle(fontSize: 11, color: C.fgMid)),
+                ],
+              ],
+            ),
+          ],
           const SizedBox(height: 16),
           const Divider(color: C.border, height: 1),
           const SizedBox(height: 12),
@@ -960,7 +1022,7 @@ class _ClipboardPanelState extends State<ClipboardPanel> {
               fillColor: C.bgInput,
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: C.border)),
               enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: C.border)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: C.accent)),
+              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: C.accent)),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               isDense: true,
             ),
@@ -1169,7 +1231,7 @@ class YConnectApp extends StatelessWidget {
         scaffoldBackgroundColor: C.bg,
         cardColor: C.bgCard,
         dividerColor: C.border,
-        colorScheme: const ColorScheme.dark(
+        colorScheme: ColorScheme.dark(
           primary: C.accent,
           secondary: C.accent2,
           surface: C.bgCard,

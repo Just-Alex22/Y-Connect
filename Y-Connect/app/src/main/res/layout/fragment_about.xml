@@ -5,36 +5,43 @@
     android:background="@color/bg_view">
     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical">
-        <!-- Header -->
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="horizontal" android:gravity="center_vertical"
             android:paddingHorizontal="16dp" android:paddingTop="48dp" android:paddingBottom="12dp">
             <ImageButton android:id="@+id/btnBack" android:layout_width="40dp" android:layout_height="40dp"
                 android:src="@drawable/ic_arrow_back"
                 android:background="?attr/selectableItemBackgroundBorderless"
-                android:tint="@color/text_primary" android:contentDescription="Atrás"/>
-            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1"
-                android:text="Acerca de" android:textColor="@color/text_primary"
-                android:textSize="17sp" android:textStyle="bold" android:layout_marginStart="12dp"/>
+                android:tint="@color/text_primary"
+                android:contentDescription="@string/btn_back"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/about_title"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp" android:textStyle="bold"
+                android:layout_marginStart="12dp"/>
         </LinearLayout>
-        <!-- Logo centrado -->
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:gravity="center_horizontal"
             android:paddingVertical="32dp">
             <ImageView android:layout_width="96dp" android:layout_height="96dp"
-                android:src="@mipmap/ic_launcher_round" android:contentDescription="Logo"
+                android:src="@mipmap/ic_launcher_round"
+                android:contentDescription="@string/app_name"
                 android:layout_marginBottom="20dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Yelena Connect" android:textColor="@color/text_primary"
-                android:textSize="24sp" android:textStyle="bold" android:layout_marginBottom="4dp"/>
+                android:text="@string/app_name"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp" android:textStyle="bold"
+                android:layout_marginBottom="4dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="v1.0.0 — App Android" android:textColor="@color/text_disabled"
-                android:textSize="13sp" android:layout_marginBottom="8dp"/>
+                android:text="@string/about_version"
+                android:textColor="@color/text_disabled"
+                android:textSize="13sp"
+                android:layout_marginBottom="8dp"/>
             <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                android:text="Companion para Yelena Connect PC" android:textColor="@color/text_secondary"
+                android:text="@string/about_subtitle"
+                android:textColor="@color/text_secondary"
                 android:textSize="13sp"/>
         </LinearLayout>
-        <!-- Info cards -->
         <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
             android:orientation="vertical" android:paddingHorizontal="16dp">
             <com.google.android.material.card.MaterialCardView
@@ -44,13 +51,17 @@
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="20dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="PROYECTO" android:textAppearance="@style/TextAppearance.Yelena.Caption"
+                        android:text="@string/about_project"
+                        android:textAppearance="@style/TextAppearance.Yelena.Caption"
                         android:layout_marginBottom="12dp"/>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Yelena Connect" android:textColor="@color/text_primary"
-                        android:textSize="14sp" android:textStyle="bold" android:layout_marginBottom="2dp"/>
+                        android:text="@string/app_name"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp" android:textStyle="bold"
+                        android:layout_marginBottom="2dp"/>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Parte del ecosistema CuerdOS" android:textColor="@color/text_secondary"
+                        android:text="@string/about_ecosystem"
+                        android:textColor="@color/text_secondary"
                         android:textSize="13sp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -61,15 +72,18 @@
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
                     android:orientation="vertical" android:padding="20dp">
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="LICENCIA" android:textAppearance="@style/TextAppearance.Yelena.Caption"
+                        android:text="@string/about_license"
+                        android:textAppearance="@style/TextAppearance.Yelena.Caption"
                         android:layout_marginBottom="12dp"/>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="GNU General Public License v3.0"
-                        android:textColor="@color/text_primary" android:textSize="14sp"
+                        android:text="@string/about_license_name"
+                        android:textColor="@color/text_primary"
+                        android:textSize="14sp"
                         android:layout_marginBottom="2dp"/>
                     <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                        android:text="Software libre y de código abierto"
-                        android:textColor="@color/text_secondary" android:textSize="13sp"/>
+                        android:text="@string/about_open_source"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="13sp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
             <com.google.android.material.card.MaterialCardView
@@ -78,19 +92,23 @@
                 android:layout_width="match_parent" android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp">
                 <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
-                    android:orientation="horizontal" android:gravity="center_vertical" android:padding="16dp">
+                    android:orientation="horizontal" android:gravity="center_vertical"
+                    android:padding="16dp">
                     <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content"
                         android:layout_weight="1" android:orientation="vertical">
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="GitHub" android:textColor="@color/text_primary"
+                            android:text="@string/visit_website"
+                            android:textColor="@color/text_primary"
                             android:textSize="14sp" android:textStyle="bold"/>
                         <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
-                            android:text="cuerdos.github.io" android:textColor="@color/accent_blue"
+                            android:text="cuerdos.github.io"
+                            android:textColor="@color/accent_blue"
                             android:textSize="13sp"/>
                     </LinearLayout>
                     <ImageView android:layout_width="18dp" android:layout_height="18dp"
                         android:src="@drawable/ic_arrow_back" android:rotation="180"
-                        android:tint="@color/text_disabled" android:contentDescription="Abrir"/>
+                        android:tint="@color/text_disabled"
+                        android:contentDescription="@string/about_open"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

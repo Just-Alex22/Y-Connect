@@ -2,6 +2,7 @@
 <resources>
     <style name="ThemeOverlay.Yelena.Green" parent="">
         <item name="colorPrimary">#5a7a22</item>
+        <item name="colorPrimaryVariant">#5a7a22</item>
         <item name="colorSecondary">#5a7a22</item>
         <item name="colorControlActivated">#5a7a22</item>
         <item name="colorAccent">#5a7a22</item>
@@ -9,6 +10,7 @@
     </style>
     <style name="ThemeOverlay.Yelena.Purple" parent="">
         <item name="colorPrimary">#9b59b6</item>
+        <item name="colorPrimaryVariant">#9b59b6</item>
         <item name="colorSecondary">#9b59b6</item>
         <item name="colorControlActivated">#9b59b6</item>
         <item name="colorAccent">#9b59b6</item>
@@ -16,6 +18,7 @@
     </style>
     <style name="ThemeOverlay.Yelena.Red" parent="">
         <item name="colorPrimary">#e74c3c</item>
+        <item name="colorPrimaryVariant">#e74c3c</item>
         <item name="colorSecondary">#e74c3c</item>
         <item name="colorControlActivated">#e74c3c</item>
         <item name="colorAccent">#e74c3c</item>
@@ -23,6 +26,7 @@
     </style>
     <style name="ThemeOverlay.Yelena.Yellow" parent="">
         <item name="colorPrimary">#f39c12</item>
+        <item name="colorPrimaryVariant">#f39c12</item>
         <item name="colorSecondary">#f39c12</item>
         <item name="colorControlActivated">#f39c12</item>
         <item name="colorAccent">#f39c12</item>
@@ -30,6 +34,7 @@
     </style>
     <style name="ThemeOverlay.Yelena.Blue" parent="">
         <item name="colorPrimary">#2980b9</item>
+        <item name="colorPrimaryVariant">#2980b9</item>
         <item name="colorSecondary">#2980b9</item>
         <item name="colorControlActivated">#2980b9</item>
         <item name="colorAccent">#2980b9</item>
@@ -37,6 +42,7 @@
     </style>
     <style name="ThemeOverlay.Yelena.Teal" parent="">
         <item name="colorPrimary">#16a085</item>
+        <item name="colorPrimaryVariant">#16a085</item>
         <item name="colorSecondary">#16a085</item>
         <item name="colorControlActivated">#16a085</item>
         <item name="colorAccent">#16a085</item>
@@ -44,6 +50,7 @@
     </style>
     <style name="ThemeOverlay.Yelena.Pink" parent="">
         <item name="colorPrimary">#e91e63</item>
+        <item name="colorPrimaryVariant">#e91e63</item>
         <item name="colorSecondary">#e91e63</item>
         <item name="colorControlActivated">#e91e63</item>
         <item name="colorAccent">#e91e63</item>
@@ -51,6 +58,7 @@
     </style>
     <style name="ThemeOverlay.Yelena.Orange" parent="">
         <item name="colorPrimary">#e67e22</item>
+        <item name="colorPrimaryVariant">#e67e22</item>
         <item name="colorSecondary">#e67e22</item>
         <item name="colorControlActivated">#e67e22</item>
         <item name="colorAccent">#e67e22</item>

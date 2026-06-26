@@ -13,9 +13,9 @@ import kotlin.concurrent.thread
 data class DiscoveredDevice(val name: String, val ip: String, val port: Int, val os: String)
 
 object YelenaDiscovery {
-    private const val TAG      = "YelenaDiscovery"
-    const val  UDP_PORT        = 1716
-    private const val INTERVAL = 3000L
+    private const val TAG       = "YelenaDiscovery"
+    const val  UDP_PORT         = 1716
+    private const val INTERVAL  = 3000L
     private const val TIMEOUT_MS = 10_000L
 
     val devices   = MutableStateFlow<List<DiscoveredDevice>>(emptyList())
@@ -23,8 +23,8 @@ object YelenaDiscovery {
 
     private var sendSocket: DatagramSocket? = null
     private var recvSocket: DatagramSocket? = null
-    private val found     = mutableMapOf<String, DiscoveredDevice>()
-    private val lastSeen  = mutableMapOf<String, Long>()
+    private val found    = mutableMapOf<String, DiscoveredDevice>()
+    private val lastSeen = mutableMapOf<String, Long>()
     @Volatile private var running = false
 
     fun start() {
@@ -99,13 +99,14 @@ object YelenaDiscovery {
         if (ip.isEmpty()) return
 
         val payload = JSONObject().apply {
-            put("type",    "yelena")
-            put("name",    android.os.Build.MODEL)
-            put("ip",      ip)
-            put("port",    8766)
-            put("os",      "Android ${android.os.Build.VERSION.RELEASE}")
-            put("version", "1")
-            put("role",    "android")
+            put("type",         "yelena")
+            put("name",         android.os.Build.MODEL)
+            put("manufacturer", android.os.Build.MANUFACTURER)
+            put("ip",           ip)
+            put("port",         8766)
+            put("os",           "Android ${android.os.Build.VERSION.RELEASE}")
+            put("version",      "1")
+            put("role",         "android")
         }.toString().toByteArray(Charsets.UTF_8)
 
         try {
@@ -133,11 +134,11 @@ object YelenaDiscovery {
 
     private fun handlePacket(src: String, raw: String) {
         try {
-            val j  = JSONObject(raw)
+            val j    = JSONObject(raw)
             if (j.optString("type") != "yelena") return
             val role = j.optString("role", "")
             if (role == "android") return
-            val os = j.optString("os", "")
+            val os   = j.optString("os", "")
 
             val name  = j.optString("name", src)
             val port  = j.optInt("port", 8765)
@@ -145,7 +146,7 @@ object YelenaDiscovery {
             found[src]    = DiscoveredDevice(name, src, port, os)
             lastSeen[src] = System.currentTimeMillis()
             devices.value = found.values.toList()
-            if (isNew) Log.i(TAG, "✓ PC encontrado: $name @ $src:$port")
+            if (isNew) Log.i(TAG, "PC found: $name @ $src:$port")
         } catch (e: Exception) {
             Log.e(TAG, "Parse error: ${e.message}")
         }

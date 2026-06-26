@@ -1,5 +1,3 @@
-
-
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -243,18 +241,18 @@ final Translations t = {
     'tr': 'Model',
     'ru': 'Модель',
   },
-  'android_label': {
-    'en': 'Android',
-    'es': 'Android',
-    'pt': 'Android',
-    'ca': 'Android',
-    'de': 'Android',
-    'fr': 'Android',
-    'ja': 'Android',
-    'ko': 'Android',
-    'it': 'Android',
-    'tr': 'Android',
-    'ru': 'Android',
+  'manufacturer_label': {
+    'en': 'Manufacturer',
+    'es': 'Fabricante',
+    'pt': 'Fabricante',
+    'ca': 'Fabricant',
+    'de': 'Hersteller',
+    'fr': 'Fabricant',
+    'ja': 'メーカー',
+    'ko': '제조사',
+    'it': 'Produttore',
+    'tr': 'Üretici',
+    'ru': 'Производитель',
   },
   'network': {
     'en': 'Network',
@@ -473,6 +471,32 @@ final Translations t = {
     'it': 'Cronologia trasferimenti',
     'tr': 'Aktarım geçmişi',
     'ru': 'История передач',
+  },
+  'waiting_for_approval': {
+    'en': 'Waiting for device approval…',
+    'es': 'Esperando aprobación del dispositivo…',
+    'pt': 'Aguardando aprovação do dispositivo…',
+    'ca': 'Esperant aprovació del dispositiu…',
+    'de': 'Warte auf Gerätegenehmigung…',
+    'fr': 'En attente d\'approbation de l\'appareil…',
+    'ja': 'デバイスの承認を待っています…',
+    'ko': '기기 승인 대기 중…',
+    'it': 'In attesa di approvazione del dispositivo…',
+    'tr': 'Cihaz onayı bekleniyor…',
+    'ru': 'Ожидание подтверждения устройства…',
+  },
+  'sending': {
+    'en': 'Sending',
+    'es': 'Enviando',
+    'pt': 'Enviando',
+    'ca': 'Enviant',
+    'de': 'Sende',
+    'fr': 'Envoi de',
+    'ja': '送信中',
+    'ko': '전송 중',
+    'it': 'Invio di',
+    'tr': 'Gönderiliyor',
+    'ru': 'Отправка',
   },
   'no_transfers': {
     'en': 'No transfers yet',
@@ -853,5 +877,3 @@ class LanguageSelectorButton extends StatelessWidget {
     );
   }
 }
-
-

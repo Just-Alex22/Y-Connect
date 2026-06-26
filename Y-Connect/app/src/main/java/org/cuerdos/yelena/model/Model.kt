@@ -57,7 +57,7 @@ data class MediaCommand(val action: String)
 data class TerminalCommand(val command: String)
 
 @Serializable
-data class TerminalOutput(val output: String, val exitCode: Int)
+data class TerminalOutput(val output: String, val exitCode: Int? = null)
 
 @Serializable
 data class ClipboardPayload(val text: String)

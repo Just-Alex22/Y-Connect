@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Yelena Connect</string>
-    <string name="welcome_title">Benvingut a\nYelena Connect</string>
+    <string name="app_name">Y-Connect</string>
+    <string name="welcome_title">Benvingut a
+Y-Connect</string>
     <string name="welcome_subtitle">Controla el teu PC des del telèfon.\nEscaneja el QR o connecta\'t automàticament.</string>
     <string name="btn_start">Comença</string>
     <string name="privacy_policy">En continuar acceptes la nostra Política de Privacitat</string>
-    <string name="connect_title">Connectar a Yelena Connect</string>
-    <string name="searching">Cercant Yelena Connect a la xarxa…</string>
+    <string name="connect_title">Connectar a Y-Connect</string>
+    <string name="searching">Cercant Y-Connect a la xarxa…</string>
     <string name="on_network">A LA XARXA</string>
     <string name="qr_section">CODI QR</string>
     <string name="manual_section">MANUAL</string>
@@ -17,7 +18,7 @@
     <string name="enter_ip">Introdueix una IP</string>
     <string name="qr_invalid">QR no vàlid</string>
     <string name="qr_scanner_title">Escanejar QR</string>
-    <string name="qr_instruction">Apunta al codi QR de Yelena Connect al teu PC</string>
+    <string name="qr_instruction">Apunta al codi QR de Y-Connect al teu PC</string>
     <string name="disconnected">Desconnectat</string>
     <string name="connected_to">Connectat · %1$s</string>
     <string name="resources_title">RECURSOS DEL PC</string>
@@ -55,7 +56,7 @@
     <string name="terminate">Finalitzar</string>
     <string name="cancel">Cancel·lar</string>
     <string name="apps_title">Aplicacions del PC</string>
-    <string name="clipboard_title">Historial del porta-retalls</string>
+    <string name="clipboard_title">Portapapers</string>
     <string name="no_history">Sense historial</string>
     <string name="copied_to_pc">Copiat al PC</string>
     <string name="trackpad_title">Trackpad / Ratolí</string>
@@ -76,8 +77,31 @@
     <string name="error_prefix">Error: %1$s</string>
     <string name="keyboard_title">Teclat remot</string>
     <string name="nav_keyboard">Teclat remot</string>
-    <string name="keyboard_hint">Escriu aquí per enviar al PC…</string>
+    <string name="keyboard_hint">Escriu aquí — s\'enganxarà al PC</string>
     <string name="special_keys">Tecles especials</string>
     <string name="clipboard_current">PORTA-RETALLS ACTUAL</string>
     <string name="history_label">HISTORIAL</string>
+    <string name="file_incoming_title">Fitxer entrant</string>
+    <string name="file_incoming_message">%1$s (%2$s · %3$s)\nVols rebre aquest fitxer?</string>
+    <string name="file_accept">Acceptar</string>
+    <string name="file_reject">Rebutjar</string>
+    <string name="file_received_title">Fitxer rebut</string>
+    <string name="file_notif_channel_name">Y-Connect</string>
+    <string name="file_notif_channel_desc">Fitxers folder</string>
+    <string name="terminal_input_hint">Escriu l\'entrada…</string>
+    <string name="about_subtitle">App Android per a Y-Connect PC</string>
+    <string name="about_ecosystem">Part de l\'ecosistema CuerdOS</string>
+    <string name="about_license_name">GNU General Public License v3.0</string>
+    <string name="about_open_source">Programari lliure i de codi obert</string>
+    <string name="about_open">Obrir</string>
+    <string name="qr_title">Connectar a Y-Connect</string>
+    <string name="manual_connect">Connectar manualment</string>
+    <string name="no_content">Sense contingut</string>
+    <string name="send_to_pc">Enviar al PC</string>
+    <string name="phone_clip_to_pc">Enviar portapapers del mòbil al PC</string>
+    <string name="quick_send_hint">Escriu text per enviar al PC…</string>
+    <string name="quick_send_section">ENVIAMENT RÀPID</string>
+    <string name="snippet_section">FRAGMENTS</string>
+    <string name="history_section">HISTORIAL</string>
+    <string name="nav_subtitle">v1.0.0 · CuerdOS</string>
 </resources>

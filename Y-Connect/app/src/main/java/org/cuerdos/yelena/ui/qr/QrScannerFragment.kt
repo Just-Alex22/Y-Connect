@@ -59,7 +59,6 @@ class QrScannerFragment : Fragment() {
     private fun handleResult(raw: String) {
         try {
             val p = json.decodeFromString<QrPayload>(raw)
-            // Guardar para reconexión automática
             requireContext()
                 .getSharedPreferences("yelena_prefs", Context.MODE_PRIVATE)
                 .edit()
@@ -73,7 +72,7 @@ class QrScannerFragment : Fragment() {
                 android.content.pm.ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED
             findNavController().navigate(R.id.action_qrScanner_to_main)
         } catch (e: Exception) {
-            Toast.makeText(context, "QR inválido", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, R.string.qr_invalid, Toast.LENGTH_SHORT).show()
             scanning = true
             b.barcodeView.resume()
         }

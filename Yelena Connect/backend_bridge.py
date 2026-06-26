@@ -186,6 +186,7 @@ class ClipboardSync:
 
 class TransferManager:
     MAX_SIZE = 100*1024*1024
+    MAX_LOG = 50
     def __init__(self, nm): self._nm=nm; self._active={}; self._log=[]
     def send_file(self, path, compress=None):
         try:
@@ -193,27 +194,60 @@ class TransferManager:
             if fsize > self.MAX_SIZE:
                 bridge.send({"t":"xfer","d":{"file":Path(path).name,"progress":0,"done":True,"error":"Too large"}})
                 return
-            fname = Path(path).name; tid = hashlib.md5(f"{path}{time.time()}".encode()).hexdigest()[:8]
-            cs = self._nm.chunk_size()
+            fname     = Path(path).name
+            ext       = Path(path).suffix.lstrip(".").upper() or "FILE"
+            tid       = hashlib.md5(f"{path}{time.time()}".encode()).hexdigest()[:8]
             if compress is None: compress = fsize > 256*1024 and self._nm.should_compress()
-            with open(path,"rb") as f: data = f.read()
-            orig = len(data)
+            with open(path,"rb") as f: raw = f.read()
             if compress:
                 buf = io.BytesIO()
-                with zipfile.ZipFile(buf,"w",zipfile.ZIP_DEFLATED) as zf: zf.writestr(fname,data)
-                data = buf.getvalue(); fname += ".zip"
-            total = max(1, (len(data)+cs-1)//cs)
-            for i in range(total):
-                s=i*cs; e=min(s+cs,len(data))
-                _ws_send("file_chunk", {"transfer_id":tid,"name":fname,"chunk_index":i,
-                    "total_chunks":total,"data":base64.b64encode(data[s:e]).decode(),
-                    "is_last":i==total-1,"compressed":compress,"original_name":Path(path).name})
-                bridge.send({"t":"xfer","d":{"id":tid,"progress":(i+1)/total,"file":Path(path).name,"done":False}})
-            bridge.send({"t":"xfer","d":{"id":tid,"progress":1,"file":Path(path).name,"done":True}})
+                with zipfile.ZipFile(buf,"w",zipfile.ZIP_DEFLATED) as zf: zf.writestr(fname, raw)
+                raw = buf.getvalue(); fname += ".zip"
+            b64   = base64.b64encode(raw).decode()
+            cs    = 65536
+            total = max(1, (len(b64) + cs - 1) // cs)
+            _ws_send("file_offer", {
+                "transfer_id":  tid,
+                "name":         Path(path).name,
+                "size":         fsize,
+                "ext":          ext,
+                "total_chunks": total,
+                "compressed":   compress,
+            })
+            self._active[tid] = {"b64": b64, "fname": fname, "orig_name": Path(path).name,
+                                 "total": total, "compress": compress, "cs": cs}
+            bridge.send({"t":"xfer","d":{"id":tid,"file":Path(path).name,"progress":0,"done":False,"waiting":True}})
         except Exception as e:
             log.error("Transfer error: %s", e)
             bridge.send({"t":"xfer","d":{"file":Path(path).name,"done":True,"error":str(e)}})
 
+    def on_file_accepted(self, tid):
+        entry = self._active.get(tid)
+        if not entry:
+            return
+        b64   = entry["b64"]; cs = entry["cs"]; total = entry["total"]
+        fname = entry["fname"]; orig = entry["orig_name"]; comp = entry["compress"]
+        try:
+            for i in range(total):
+                s = i * cs; e = min(s + cs, len(b64))
+                _ws_send("file_chunk", {
+                    "transfer_id": tid, "name": fname, "chunk_index": i,
+                    "total_chunks": total, "data": b64[s:e],
+                    "is_last": i == total - 1, "compressed": comp, "original_name": orig,
+                })
+                bridge.send({"t":"xfer","d":{"id":tid,"progress":(i+1)/total,"file":orig,"done":False,"waiting":False}})
+                time.sleep(0.005)
+            bridge.send({"t":"xfer","d":{"id":tid,"progress":1,"file":orig,"done":True}})
+        except Exception as e:
+            log.error("Transfer send error: %s", e)
+            bridge.send({"t":"xfer","d":{"file":orig,"done":True,"error":str(e)}})
+        finally:
+            self._active.pop(tid, None)
+
+    def on_file_rejected(self, tid):
+        entry = self._active.pop(tid, None)
+        fname = entry["orig_name"] if entry else "?"
+        bridge.send({"t":"xfer","d":{"id":tid,"file":fname,"done":True,"error":"Rejected by device"}})
 
 
 class Bridge:
@@ -385,8 +419,17 @@ def _on_resources(d):
     bridge.send({"t":"res","d":d})
 
 def _on_media(d):
-    bridge.send({"t":"media","d":d})
+    bridge.send({"t":"phone_media","d":d})
     context.set_media_state(d.get("playing", False))
+
+def _on_accent_color(hex_color):
+    bridge.send({"t":"accent_color","d":{"hex":hex_color}})
+
+def _on_file_accept(tid):
+    threading.Thread(target=transfer_mgr.on_file_accepted, args=(tid,), daemon=True).start()
+
+def _on_file_reject(tid):
+    transfer_mgr.on_file_rejected(tid)
 
 def _on_volume(lvl):
     bridge.send({"t":"vol","d":lvl})
@@ -560,6 +603,9 @@ def main():
     manager.on_rssi_changed(_on_rssi)
     manager.on_resources_changed(_on_resources)
     manager.on_phone_media_changed(_on_media)
+    manager.on_accent_color_changed(_on_accent_color)
+    manager.on_file_accept_changed(_on_file_accept)
+    manager.on_file_reject_changed(_on_file_reject)
     manager.on_phone_volume_changed(_on_volume)
 
     log.info("Y-Connect bridge v2.0 starting")

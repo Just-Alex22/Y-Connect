@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Y-Connect</string>
-    <string name="welcome_title">Добро пожаловать\nв Y-Connect</string>
+    <string name="welcome_title">Добро пожаловать в
+Y-Connect</string>
     <string name="welcome_subtitle">Управляйте ПК с телефона.\nОтсканируйте QR-код или подключитесь автоматически.</string>
     <string name="btn_start">Начать</string>
     <string name="privacy_policy">Продолжая, вы принимаете нашу Политику конфиденциальности</string>
@@ -55,7 +56,7 @@
     <string name="terminate">Завершить</string>
     <string name="cancel">Отмена</string>
     <string name="apps_title">Приложения ПК</string>
-    <string name="clipboard_title">История буфера обмена</string>
+    <string name="clipboard_title">Буфер обмена</string>
     <string name="no_history">Нет истории</string>
     <string name="copied_to_pc">Скопировано на ПК</string>
     <string name="trackpad_title">Трекпад / Мышь</string>
@@ -80,7 +81,7 @@
     <string name="error_prefix">Ошибка: %1$s</string>
     <string name="keyboard_title">Удалённая клавиатура</string>
     <string name="nav_keyboard">Удалённая клавиатура</string>
-    <string name="keyboard_hint">Печатайте здесь для отправки на ПК…</string>
+    <string name="keyboard_hint">Введите здесь — будет вставлено на ПК</string>
     <string name="special_keys">Специальные клавиши</string>
     <string name="clipboard_current">ТЕКУЩИЙ БУФЕР</string>
     <string name="history_label">ИСТОРИЯ</string>
@@ -89,4 +90,27 @@
     <string name="notif_permission_message">Y-Connect требует доступ к уведомлениям для отображения на ПК.</string>
     <string name="notif_permission_open">Открыть настройки</string>
     <string name="notif_permission_skip">Не сейчас</string>
+    <string name="file_incoming_title">Входящий файл</string>
+    <string name="file_incoming_message">%1$s (%2$s · %3$s)\nВы хотите получить этот файл?</string>
+    <string name="file_accept">Принять</string>
+    <string name="file_reject">Отклонить</string>
+    <string name="file_received_title">Файл получен</string>
+    <string name="file_notif_channel_name">Y-Connect</string>
+    <string name="file_notif_channel_desc">Файлы folder</string>
+    <string name="terminal_input_hint">Введите ввод…</string>
+    <string name="about_subtitle">Android-приложение для Y-Connect PC</string>
+    <string name="about_ecosystem">Часть экосистемы CuerdOS</string>
+    <string name="about_license_name">GNU General Public License v3.0</string>
+    <string name="about_open_source">Свободное программное обеспечение с открытым исходным кодом</string>
+    <string name="about_open">Открыть</string>
+    <string name="qr_title">Подключиться к Y-Connect</string>
+    <string name="manual_connect">Подключиться вручную</string>
+    <string name="no_content">Нет содержимого</string>
+    <string name="send_to_pc">Отправить на ПК</string>
+    <string name="phone_clip_to_pc">Отправить буфер телефона на ПК</string>
+    <string name="quick_send_hint">Введите текст для отправки на ПК…</string>
+    <string name="quick_send_section">БЫСТРАЯ ОТПРАВКА</string>
+    <string name="snippet_section">ФРАГМЕНТЫ</string>
+    <string name="history_section">ИСТОРИЯ</string>
+    <string name="nav_subtitle">v1.0.0 · CuerdOS</string>
 </resources>

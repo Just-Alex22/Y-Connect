@@ -47,7 +47,7 @@ class ConnectFragment : Fragment() {
             val ip   = b.etIp.text.toString().trim()
             val port = b.etPort.text.toString().trim().toIntOrNull() ?: 8765
             if (ip.isNotEmpty()) connectTo(ip, port, ip)
-            else Toast.makeText(context, "Ingresa una IP", Toast.LENGTH_SHORT).show()
+            else Toast.makeText(context, R.string.enter_ip, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -72,12 +72,10 @@ class ConnectFragment : Fragment() {
     }
 
     private fun connectTo(ip: String, port: Int, name: String) {
-        // Easter egg — V.3.R.4 : 5323
         if (ip.uppercase() == "V.3.R.4" && port == 5323) {
             findNavController().navigate(R.id.action_connect_to_easter)
             return
         }
-        // Guardar para reconexión automática
         requireContext()
             .getSharedPreferences("yelena_prefs", Context.MODE_PRIVATE)
             .edit()
